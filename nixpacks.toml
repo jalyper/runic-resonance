@@ -12,6 +12,3 @@ cmds = [
 cmds = [
     "yarn --cwd frontend build"
 ]
-
-[start]
-cmd = "bash start.sh"
