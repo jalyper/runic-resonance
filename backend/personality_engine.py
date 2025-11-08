@@ -15,16 +15,16 @@ class PersonalityEngine:
     
     # Data sources for each trait calculation
     TRAIT_DATA_SOURCES = {
-        "The Protector": "Based on: Assist ratio, Damage taken for team, Supporting plays",
-        "The Tactician": "Based on: Vision score per minute, Ward placement, Map awareness",
-        "The Disciplined": "Based on: CS consistency, Gold efficiency, Mechanical precision",
-        "The Fearless": "Based on: Fight participation rate, First blood involvement, Aggression",
-        "The Resilient": "Based on: Low death rate, Comeback wins, Survival rate",
-        "The Wanderer": "Based on: Solo kill frequency, Independent plays, Roaming patterns",
-        "The Adaptive": "Based on: Champion pool diversity, Versatile playstyle",
-        "The Enlightened": "Based on: KDA ratio (3.5+ is good), Win rate (55%+ is good), Smart decision-making",
-        "The Relentless": "Based on: Kill participation, Multikills, Never giving up",
-        "The Healer": "Based on: High assist ratio, Team-focused play, Enabling allies"
+        "The Protector": "Based on: Assist/Kill ratio (2.0+ is good), Damage taken (20k+ is good)",
+        "The Tactician": "Based on: Vision score (40+ is good), Ward placement (12+ is good)",
+        "The Disciplined": "Based on: CS per game (200+ is good), Gold earned (11k+ is good)",
+        "The Fearless": "Based on: Kill participation (12+ per game), First blood rate",
+        "The Resilient": "Based on: Low death rate (under 4.5), Win rate (55%+)",
+        "The Wanderer": "Based on: Solo kill frequency, Kill-focused playstyle",
+        "The Adaptive": "Based on: Champion pool size (5+ champs is good)",
+        "The Enlightened": "Based on: KDA ratio (3.0+ is good), Win rate (55%+ is good)",
+        "The Relentless": "Based on: Total kill participation (15+ per game), Multikills",
+        "The Healer": "Based on: Assist ratio (high assists), Team-enabling plays"
     }
     
     # Champion mappings for each trait (based on lore, not mechanics)
