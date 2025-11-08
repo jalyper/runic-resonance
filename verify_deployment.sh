@@ -20,12 +20,13 @@ files=(
     "nixpacks.toml"
     "railway.json"
     "Procfile"
-    "Dockerfile"
     ".dockerignore"
     "backend/requirements.txt"
     "backend/server.py"
     "frontend/package.json"
 )
+
+# Note: Dockerfile is optional (Dockerfile.alternative exists for fallback)
 
 for file in "${files[@]}"; do
     if [ -f "$file" ]; then
