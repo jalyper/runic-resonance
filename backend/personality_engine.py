@@ -29,16 +29,16 @@ class PersonalityEngine:
     
     # Champion mappings for each trait (based on lore, not mechanics)
     TRAIT_CHAMPIONS = {
-        "The Protector": ["Braum", "Taric", "Shen", "Galio", "Poppy"],
-        "The Tactician": ["Swain", "Twisted Fate", "Gangplank", "Ryze", "Zilean"],
-        "The Disciplined": ["Garen", "Jarvan IV", "Fiora", "Xin Zhao", "Irelia"],
-        "The Fearless": ["Leona", "Pantheon", "Darius", "Sett", "Olaf"],
-        "The Resilient": ["Sion", "Ornn", "Mundo", "Nasus", "Maokai"],
-        "The Wanderer": ["Yasuo", "Taliyah", "Kayn", "Jhin", "Rakan"],
-        "The Adaptive": ["Neeko", "Sylas", "LeBlanc", "Zoe", "Seraphine"],
-        "The Enlightened": ["Karma", "Jhin", "Ivern", "Bard", "Soraka"],
-        "The Relentless": ["Viego", "Kalista", "Kled", "Aatroz", "Mordekaiser"],
-        "The Healer": ["Soraka", "Shen", "Janna", "Lulu", "Nami"]
+        "The Protector": ["Braum", "Taric", "Shen", "Galio", "Poppy", "Alistar", "Leona"],
+        "The Tactician": ["Swain", "Twisted Fate", "Gangplank", "Ryze", "Zilean", "Azir", "Viktor"],
+        "The Disciplined": ["Garen", "Jarvan IV", "Fiora", "Xin Zhao", "Irelia", "Camille", "Yasuo"],
+        "The Fearless": ["Leona", "Pantheon", "Darius", "Sett", "Olaf", "Tryndamere", "Draven"],
+        "The Resilient": ["Sion", "Ornn", "Mundo", "Nasus", "Maokai", "Volibear", "Trundle"],
+        "The Wanderer": ["Yasuo", "Taliyah", "Kayn", "Jhin", "Rakan", "Ekko", "Ezreal"],
+        "The Adaptive": ["Neeko", "Sylas", "LeBlanc", "Zoe", "Seraphine", "Shaco", "Kindred"],
+        "The Enlightened": ["Karma", "Jhin", "Ivern", "Bard", "Soraka", "Sona", "Lux"],
+        "The Relentless": ["Viego", "Kalista", "Kled", "Aatrox", "Mordekaiser", "Tryndamere", "Warwick"],
+        "The Healer": ["Soraka", "Shen", "Janna", "Lulu", "Nami", "Yuumi", "Sona"]
     }
     
     def calculate_traits(self, stats: Dict) -> List[Dict]:
