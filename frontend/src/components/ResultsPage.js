@@ -157,8 +157,17 @@ export default function ResultsPage({ data, onReset }) {
           {/* Play Bonus */}
           {championData.play_bonus !== 'None' && (
             <div className="text-center mt-2">
-              <span className="inline-block px-2 py-1 bg-blue-500/20 rounded text-blue-300 text-xs border border-blue-500/30">
-                ⭐ {championData.play_bonus} Play Rate Bonus
+              <span className="inline-block px-3 py-1 bg-blue-500/20 rounded-full text-blue-300 text-xs border border-blue-500/30 font-semibold">
+                ⭐ {championData.play_bonus === 'Played' ? 'Champion Played' : `${championData.play_bonus} Play Rate`}
+              </span>
+            </div>
+          )}
+          
+          {/* No Games Played Note */}
+          {championData.games_played === 0 && (
+            <div className="text-center mt-2">
+              <span className="inline-block px-3 py-1 bg-slate-700/30 rounded-full text-purple-300/70 text-xs border border-slate-600/30">
+                💡 Playstyle Match
               </span>
             </div>
           )}
