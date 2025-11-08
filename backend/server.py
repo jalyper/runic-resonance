@@ -62,14 +62,31 @@ class TraitData(BaseModel):
     description: str
     champions: List[str]
     lore: str
+    data_source: str
 
 
-class SpiritChampion(BaseModel):
-    """Spirit champion resonance data."""
+class TraitDetail(BaseModel):
+    """Detailed trait information for slot matching."""
+    name: str
+    score: int
+    lore: str
+
+
+class ChampionResonance(BaseModel):
+    """Individual champion resonance data."""
+    rank: int
     champion: str
     slots_filled: int
     matching_traits: List[str]
+    trait_details: List[TraitDetail]
     resonance_strength: float
+    play_bonus: str
+
+
+class SpiritChampion(BaseModel):
+    """Spirit champion resonance data with runner-ups."""
+    primary: ChampionResonance
+    runner_ups: List[ChampionResonance]
 
 
 class AnalysisResponse(BaseModel):
