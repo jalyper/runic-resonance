@@ -1,10 +1,11 @@
 [phases.setup]
-nixPkgs = ["python311", "nodejs-18_x", "yarn", "mongodb"]
+nixPkgs = ["python311", "nodejs-18_x", "yarn"]
 
 [phases.install]
 cmds = [
     "cd backend && pip install -r requirements.txt",
-    "cd frontend && yarn install"
+    "cd frontend && yarn install",
+    "pip install supervisor"
 ]
 
 [phases.build]
