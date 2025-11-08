@@ -1,1 +1,1 @@
-web: supervisord -c /app/supervisord.conf -n
+web: bash start.sh
