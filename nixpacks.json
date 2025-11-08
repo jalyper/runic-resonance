@@ -1,0 +1,22 @@
+{
+  "phases": {
+    "setup": {
+      "nixPkgs": ["python311", "nodejs-18_x", "yarn"]
+    },
+    "install": {
+      "cmds": [
+        "pip install --no-cache-dir supervisor uvicorn",
+        "pip install --no-cache-dir -r backend/requirements.txt",
+        "yarn --cwd frontend install"
+      ]
+    },
+    "build": {
+      "cmds": [
+        "yarn --cwd frontend build"
+      ]
+    }
+  },
+  "start": {
+    "cmd": "bash start.sh"
+  }
+}
