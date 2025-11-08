@@ -284,23 +284,33 @@ class PersonalityEngine:
                     })
                     champion_scores[champion]['total_score'] += trait['score']
         
-        # Apply play-rate multiplier
+        # Apply play-rate multiplier and track games played
         champions_played = stats.get('champions_played', {})
         total_games = stats.get('total_games', 1)
         
-        for champion, games in champions_played.items():
-            play_rate = (games / total_games) * 100
-            if champion in champion_scores:
-                # Bonus for playing the champion
+        for champion in champion_scores:
+            games_played = champions_played.get(champion, 0)
+            play_rate = (games_played / total_games) * 100
+            
+            champion_scores[champion]['games_played'] = games_played
+            champion_scores[champion]['play_rate'] = play_rate
+            
+            if games_played > 0:
+                # Significant bonus for actually playing the champion
+                # Scale: 1 game = +5, 5 games = +25, 10 games = +50
+                play_bonus_points = min(50, games_played * 5)
+                champion_scores[champion]['total_score'] += play_bonus_points
+                
                 if play_rate >= 25:
-                    champion_scores[champion]['total_score'] += 30
                     champion_scores[champion]['play_bonus'] = 'High'
                 elif play_rate >= 15:
-                    champion_scores[champion]['total_score'] += 20
                     champion_scores[champion]['play_bonus'] = 'Medium'
-                elif play_rate >= 10:
-                    champion_scores[champion]['total_score'] += 10
+                elif play_rate >= 5:
                     champion_scores[champion]['play_bonus'] = 'Low'
+                else:
+                    champion_scores[champion]['play_bonus'] = 'Played'
+            else:
+                champion_scores[champion]['play_bonus'] = 'None'
         
         # Sort all champions by total score
         sorted_champions = sorted(
