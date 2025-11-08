@@ -263,10 +263,12 @@ class RiotAPI:
             stats['kda'] = round((stats['kills'] + stats['assists']) / max(stats['deaths'], 1), 2)
             stats['champion_pool_size'] = len(stats['champions_played'])
         
-        stats['summoner_name'] = summoner_name
+        stats['summoner_name'] = f"{game_name}#{tag_line}"
+        stats['game_name'] = game_name
+        stats['tag_line'] = tag_line
         stats['region'] = region
         stats['puuid'] = puuid
-        stats['summoner_level'] = summoner['summonerLevel']
+        stats['summoner_level'] = summoner.get('summonerLevel', 0)
         
-        logger.info(f"Successfully aggregated stats for {summoner_name}: {stats['total_games']} games")
+        logger.info(f"Successfully aggregated stats for {game_name}#{tag_line}: {stats['total_games']} games")
         return stats
