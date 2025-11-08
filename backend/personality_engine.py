@@ -13,6 +13,20 @@ class PersonalityEngine:
     Each trait maps to specific champions and their lore characteristics.
     """
     
+    # Data sources for each trait calculation
+    TRAIT_DATA_SOURCES = {
+        "The Protector": "Based on: Assist ratio, Damage taken for team, Supporting plays",
+        "The Tactician": "Based on: Vision score per minute, Ward placement, Map awareness",
+        "The Disciplined": "Based on: CS consistency, Gold efficiency, Mechanical precision",
+        "The Fearless": "Based on: Fight participation rate, First blood involvement, Aggression",
+        "The Resilient": "Based on: Low death rate, Comeback wins, Survival rate",
+        "The Wanderer": "Based on: Solo kill frequency, Independent plays, Roaming patterns",
+        "The Adaptive": "Based on: Champion pool diversity, Versatile playstyle",
+        "The Enlightened": "Based on: High KDA ratio, Smart decisions, Win rate",
+        "The Relentless": "Based on: Kill participation, Multikills, Never giving up",
+        "The Healer": "Based on: High assist ratio, Team-focused play, Enabling allies"
+    }
+    
     # Champion mappings for each trait (based on lore, not mechanics)
     TRAIT_CHAMPIONS = {
         "The Protector": ["Braum", "Taric", "Shen", "Galio", "Poppy"],
