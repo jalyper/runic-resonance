@@ -15,6 +15,8 @@ git push
 2. Click **"New Project"**
 3. Select **"Deploy from GitHub repo"**
 4. Choose your repository
+5. **Important**: Railway should auto-detect **Nixpacks** as the builder
+   - If it tries to use Docker, go to Settings → Builder → Select "Nixpacks"
 
 ## Step 3: Add MongoDB Database
 
