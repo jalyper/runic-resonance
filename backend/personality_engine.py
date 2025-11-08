@@ -171,27 +171,55 @@ class PersonalityEngine:
         return round(normalized)
     
     def _calculate_protector(self, stats: Dict) -> int:
-        """Calculate Protector trait score."""
+        """
+        Calculate Protector trait score.
+        Balanced for: 5/10 = baseline support, 7/10 = good support, 10/10 = elite
+        """
         assists_ratio = stats.get('avg_assists', 0) / max(stats.get('avg_kills', 1), 1)
-        damage_taken = stats.get('avg_damage_taken', 0) / 1000  # Normalize
+        damage_taken = stats.get('avg_damage_taken', 0) / 1000
         
-        score = (assists_ratio * 4) + (damage_taken / 5)
+        # Score from assists: 1.0 ratio = 5pts, 2.0 = 7pts, 4.0 = 10pts
+        assist_score = 5 + (assists_ratio - 1.0) * 1.5
+        
+        # Score from tanking: 15k dmg = 5pts, 20k = 7pts, 30k = 10pts
+        tank_score = 5 + (damage_taken - 15) / 5
+        
+        # Average the two
+        score = (assist_score * 0.7) + (tank_score * 0.3)
         return self._normalize_score(score)
     
     def _calculate_tactician(self, stats: Dict) -> int:
-        """Calculate Tactician trait score."""
-        vision = stats.get('avg_vision_score', 0) / 10
-        wards = stats.get('avg_wards_placed', 0) / 2
+        """
+        Calculate Tactician trait score.
+        Balanced: 5/10 = 25 vision, 7/10 = 40 vision, 10/10 = 60+ vision
+        """
+        vision = stats.get('avg_vision_score', 0)
+        wards = stats.get('avg_wards_placed', 0)
         
-        score = vision + wards
+        # Vision score is primary (60%): 25 = 5pts, 40 = 7pts, 60 = 10pts
+        vision_score = 5 + (vision - 25) / 7
+        
+        # Wards placed is secondary (40%): 8 = 5pts, 12 = 7pts, 20 = 10pts
+        ward_score = 5 + (wards - 8) / 3
+        
+        score = (vision_score * 0.6) + (ward_score * 0.4)
         return self._normalize_score(score)
     
     def _calculate_disciplined(self, stats: Dict) -> int:
-        """Calculate Disciplined trait score."""
-        cs_score = stats.get('avg_cs', 0) / 30
-        gold_efficiency = stats.get('avg_gold', 0) / 1200
+        """
+        Calculate Disciplined trait score.
+        Balanced: 5/10 = 150cs, 7/10 = 200cs, 10/10 = 250+ cs
+        """
+        cs = stats.get('avg_cs', 0)
+        gold = stats.get('avg_gold', 0)
         
-        score = cs_score + gold_efficiency
+        # CS is primary (70%): 150 = 5pts, 200 = 7pts, 250 = 10pts
+        cs_score = 5 + (cs - 150) / 20
+        
+        # Gold efficiency (30%): 9k = 5pts, 11k = 7pts, 13k = 10pts  
+        gold_score = 5 + (gold - 9000) / 800
+        
+        score = (cs_score * 0.7) + (gold_score * 0.3)
         return self._normalize_score(score)
     
     def _calculate_fearless(self, stats: Dict) -> int:
