@@ -180,14 +180,14 @@ async def analyze_summoner(request: AnalysisRequest):
             narrative = bedrock_ai.generate_runic_narrative(
                 summoner_name=stats['summoner_name'],
                 traits=traits,
-                spirit_champion=spirit_champion,
+                spirit_champion=spirit_champion['primary'],
                 stats=stats
             )
         except Exception as e:
             logger.error(f"Bedrock AI error: {e}")
             # Use fallback narrative
             narrative = f"""The Runes shimmer with recognition, {stats['summoner_name']}. 
-            Your spirit resonates with {spirit_champion['champion']}, a champion of legend. 
+            Your spirit resonates with {spirit_champion['primary']['champion']}, a champion of legend. 
             Through {stats['total_games']} battles, you have forged your path with determination and skill."""
         
         # Step 5: Create response
