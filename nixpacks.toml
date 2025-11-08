@@ -4,13 +4,13 @@ nixPkgs = ["python311", "nodejs-18_x", "yarn"]
 [phases.install]
 cmds = [
     "pip install supervisor uvicorn",
-    "cd /app/backend && pip install -r requirements.txt",
-    "cd /app/frontend && yarn install --frozen-lockfile"
+    "cd backend && pip install -r requirements.txt",
+    "cd frontend && yarn install"
 ]
 
 [phases.build]
 cmds = [
-    "cd /app/frontend && yarn build"
+    "cd frontend && yarn build"
 ]
 
 [start]
