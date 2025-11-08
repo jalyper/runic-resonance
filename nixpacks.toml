@@ -4,14 +4,14 @@ nixPkgs = ["python311", "nodejs-18_x", "yarn"]
 [phases.install]
 cmds = [
     "pip install supervisor uvicorn",
-    "cd backend && pip install -r requirements.txt",
-    "cd frontend && yarn install"
+    "(cd backend && pip install -r requirements.txt)",
+    "(cd frontend && yarn install)"
 ]
 
 [phases.build]
 cmds = [
-    "cd frontend && yarn build"
+    "(cd frontend && yarn build)"
 ]
 
 [start]
-cmd = "supervisord -c /app/supervisord.conf -n"
+cmd = "supervisord -c supervisord.conf -n"
