@@ -1,13 +1,13 @@
 node_modules
+frontend/node_modules
 .git
-.gitignore
 .emergent
 __pycache__
+backend/__pycache__
 *.pyc
 *.pyo
 *.pyd
 .Python
-.env
 .venv
 venv/
 ENV/
@@ -16,10 +16,5 @@ ENV/
 .npm
 .cache
 frontend/build
-backend/__pycache__
 tests/
 test_result.md
-README.md
-DEPLOYMENT.md
-METHODOLOGY.md
-PROJECT_NOTES.md
