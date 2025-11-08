@@ -235,7 +235,7 @@ class PersonalityEngine:
             stats: Player statistics including champions played
             
         Returns:
-            Dictionary with spirit champion info
+            Dictionary with spirit champion info and runner-ups
         """
         # Count how many traits match each champion
         champion_scores = {}
@@ -248,10 +248,16 @@ class PersonalityEngine:
                         champion_scores[champion] = {
                             'slots_filled': 0,
                             'traits': [],
+                            'trait_details': [],
                             'total_score': 0
                         }
                     champion_scores[champion]['slots_filled'] += 1
                     champion_scores[champion]['traits'].append(trait['name'])
+                    champion_scores[champion]['trait_details'].append({
+                        'name': trait['name'],
+                        'score': trait['score'],
+                        'lore': trait['lore']
+                    })
                     champion_scores[champion]['total_score'] += trait['score']
         
         # Apply play-rate multiplier
@@ -264,32 +270,55 @@ class PersonalityEngine:
                 # Bonus for playing the champion
                 if play_rate >= 25:
                     champion_scores[champion]['total_score'] += 30
+                    champion_scores[champion]['play_bonus'] = 'High'
                 elif play_rate >= 15:
                     champion_scores[champion]['total_score'] += 20
+                    champion_scores[champion]['play_bonus'] = 'Medium'
                 elif play_rate >= 10:
                     champion_scores[champion]['total_score'] += 10
+                    champion_scores[champion]['play_bonus'] = 'Low'
         
-        # Find champions with 3+ slots filled
-        qualified_champions = {
-            champ: data for champ, data in champion_scores.items()
-            if data['slots_filled'] >= 3
-        }
+        # Sort all champions by total score
+        sorted_champions = sorted(
+            champion_scores.items(), 
+            key=lambda x: (x[1]['slots_filled'], x[1]['total_score']), 
+            reverse=True
+        )
         
-        if qualified_champions:
-            # Sort by total score
-            spirit_champion = max(qualified_champions.items(), key=lambda x: x[1]['total_score'])
-            return {
-                'champion': spirit_champion[0],
-                'slots_filled': spirit_champion[1]['slots_filled'],
-                'matching_traits': spirit_champion[1]['traits'],
-                'resonance_strength': min(100, (spirit_champion[1]['total_score'] / 30) * 100)
-            }
-        else:
+        # Get top 3 champions
+        top_champions = []
+        for i, (champ, data) in enumerate(sorted_champions[:3]):
+            resonance = min(100, (data['total_score'] / 30) * 100)
+            top_champions.append({
+                'rank': i + 1,
+                'champion': champ,
+                'slots_filled': data['slots_filled'],
+                'matching_traits': data['traits'],
+                'trait_details': data['trait_details'],
+                'resonance_strength': resonance,
+                'play_bonus': data.get('play_bonus', 'None')
+            })
+        
+        # Ensure we have at least 1 champion
+        if not top_champions:
             # Fallback: Find highest scoring trait and pick a champion from it
             highest_trait = max(traits, key=lambda x: x['score'])
-            return {
+            top_champions = [{
+                'rank': 1,
                 'champion': highest_trait['champions'][0],
                 'slots_filled': 1,
                 'matching_traits': [highest_trait['name']],
-                'resonance_strength': highest_trait['score'] * 10
-            }
+                'trait_details': [{
+                    'name': highest_trait['name'],
+                    'score': highest_trait['score'],
+                    'lore': highest_trait['lore']
+                }],
+                'resonance_strength': highest_trait['score'] * 10,
+                'play_bonus': 'None'
+            }]
+        
+        # Return primary champion and runner-ups
+        return {
+            'primary': top_champions[0],
+            'runner_ups': top_champions[1:] if len(top_champions) > 1 else []
+        }
