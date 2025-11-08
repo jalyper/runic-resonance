@@ -119,19 +119,29 @@ async def analyze_summoner(request: AnalysisRequest):
     5. Stores results in database
     """
     try:
-        logger.info(f"Starting analysis for {request.summoner_name} in {request.region}")
+        logger.info(f"Starting analysis for {request.riot_id} in {request.region}")
+        
+        # Parse Riot ID (GameName#TagLine)
+        if '#' not in request.riot_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid Riot ID format. Use GameName#TagLine (e.g., Player#NA1)"
+            )
+        
+        game_name, tag_line = request.riot_id.split('#', 1)
         
         # Step 1: Fetch player stats from Riot API
         try:
             stats = riot_api.get_player_stats(
-                summoner_name=request.summoner_name,
+                game_name=game_name,
+                tag_line=tag_line,
                 region=request.region,
                 match_count=request.match_count
             )
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Summoner not found: {str(e)}"
+                detail=f"Account not found: {str(e)}"
             )
         except Exception as e:
             logger.error(f"Riot API error: {e}")
