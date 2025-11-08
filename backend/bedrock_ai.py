@@ -88,17 +88,21 @@ Create a mystical narrative (300-350 words) that:
 Make it feel EPIC, MYSTICAL, and PERSONAL. Use poetic language but stay grounded in actual League of Legends lore."""
 
         try:
-            # Construct the request body
+            # Construct the request body for Claude 3.5
             request_body = json.dumps({
                 "anthropic_version": "bedrock-2023-05-31",
                 "max_tokens": 1500,
                 "temperature": 0.9,
                 "top_p": 0.95,
-                "system": system_prompt,
                 "messages": [
                     {
                         "role": "user",
-                        "content": user_message
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{system_prompt}\n\n{user_message}"
+                            }
+                        ]
                     }
                 ]
             })
