@@ -178,7 +178,7 @@ async def analyze_summoner(request: AnalysisRequest):
         timestamp = datetime.now(timezone.utc)
         
         response = AnalysisResponse(
-            summoner_name=request.summoner_name,
+            summoner_name=stats['summoner_name'],
             region=request.region,
             summoner_level=stats['summoner_level'],
             games_analyzed=stats['total_games'],
