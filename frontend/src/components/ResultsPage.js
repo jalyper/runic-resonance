@@ -75,7 +75,7 @@ export default function ResultsPage({ data, onReset }) {
         </h3>
 
         {/* Resonance Stats */}
-        <div className="flex items-center justify-center space-x-6 text-sm">
+        <div className="flex items-center justify-center space-x-4 text-sm">
           <div className="text-center">
             <p className="text-purple-300/70 text-xs">Resonance</p>
             <p className={`text-2xl font-bold ${getResonanceColor(championData.resonance_strength)}`}>
@@ -88,7 +88,22 @@ export default function ResultsPage({ data, onReset }) {
               {championData.slots_filled}/3
             </p>
           </div>
+          <div className="text-center">
+            <p className="text-purple-300/70 text-xs">Games</p>
+            <p className="text-2xl font-bold text-blue-300">
+              {championData.games_played}
+            </p>
+          </div>
         </div>
+        
+        {/* Play Rate */}
+        {championData.games_played > 0 && (
+          <div className="text-center">
+            <p className="text-sm text-purple-300">
+              <span className="text-blue-300 font-semibold">{championData.play_rate.toFixed(1)}%</span> of your games
+            </p>
+          </div>
+        )}
 
         {/* Slot Visualization */}
         <div className="space-y-2">
