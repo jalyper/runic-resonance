@@ -152,7 +152,7 @@ async def analyze_summoner(request: AnalysisRequest):
         
         # Step 2: Calculate personality traits
         traits = personality_engine.calculate_traits(stats)
-        logger.info(f"Calculated {len(traits)} traits for {request.summoner_name}")
+        logger.info(f"Calculated {len(traits)} traits for {stats['summoner_name']}")
         
         # Step 3: Determine spirit champion
         spirit_champion = personality_engine.determine_spirit_champion(traits, stats)
