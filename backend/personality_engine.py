@@ -22,7 +22,7 @@ class PersonalityEngine:
         "The Resilient": "Based on: Low death rate, Comeback wins, Survival rate",
         "The Wanderer": "Based on: Solo kill frequency, Independent plays, Roaming patterns",
         "The Adaptive": "Based on: Champion pool diversity, Versatile playstyle",
-        "The Enlightened": "Based on: High KDA ratio, Smart decisions, Win rate",
+        "The Enlightened": "Based on: KDA ratio (3.5+ is good), Win rate (55%+ is good), Smart decision-making",
         "The Relentless": "Based on: Kill participation, Multikills, Never giving up",
         "The Healer": "Based on: High assist ratio, Team-focused play, Enabling allies"
     }
