@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "League of Legends personality analyzer",
   "scripts": {
-    "start": "bash start.sh",
-    "start-simple": "bash start-simple.sh",
+    "start": "python3 start.py",
+    "start:bash": "bash start.sh",
+    "start:simple": "bash start-simple.sh",
+    "start:supervisor": "supervisord -c /app/supervisord.conf -n",
     "build": "cd frontend && yarn build"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "python": ">=3.11.0"
   }
 }
