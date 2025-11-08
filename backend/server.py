@@ -173,7 +173,7 @@ async def analyze_summoner(request: AnalysisRequest):
         
         # Step 3: Determine spirit champion
         spirit_champion = personality_engine.determine_spirit_champion(traits, stats)
-        logger.info(f"Spirit champion: {spirit_champion['champion']} ({spirit_champion['resonance_strength']:.0f}% resonance)")
+        logger.info(f"Spirit champion: {spirit_champion['primary']['champion']} ({spirit_champion['primary']['resonance_strength']:.0f}% resonance)")
         
         # Step 4: Generate AI narrative
         try:
