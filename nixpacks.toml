@@ -1,16 +1,16 @@
 [phases.setup]
-nixPkgs = ["python311", "nodejs-18_x", "yarn"]
+nixPkgs = ["python311", "nodejs-18_x", "yarn", "supervisor"]
 
 [phases.install]
 cmds = [
-    "pip install supervisor uvicorn",
-    "(cd backend && pip install -r requirements.txt)",
-    "(cd frontend && yarn install)"
+    "pip install --no-cache-dir supervisor uvicorn",
+    "pip install --no-cache-dir -r backend/requirements.txt",
+    "yarn --cwd frontend install"
 ]
 
 [phases.build]
 cmds = [
-    "(cd frontend && yarn build)"
+    "yarn --cwd frontend build"
 ]
 
 [start]
