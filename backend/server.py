@@ -81,6 +81,8 @@ class ChampionResonance(BaseModel):
     trait_details: List[TraitDetail]
     resonance_strength: float
     play_bonus: str
+    games_played: int
+    play_rate: float
 
 
 class SpiritChampion(BaseModel):
