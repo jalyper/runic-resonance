@@ -226,11 +226,26 @@ class PersonalityEngine:
         return self._normalize_score(score)
     
     def _calculate_enlightened(self, stats: Dict) -> int:
-        """Calculate Enlightened trait score."""
+        """
+        Calculate Enlightened trait score.
+        Rebalanced for realistic thresholds:
+        - 5/10: Average (50% WR, 2.0 KDA)
+        - 7/10: Good (55% WR, 3.5 KDA) - unlocks slot
+        - 9/10: Very Good (60% WR, 4.5 KDA)
+        - 10/10: Elite (65% WR, 5+ KDA)
+        """
         kda = stats.get('kda', 2)
-        win_rate = stats.get('win_rate', 50) / 10
+        win_rate = stats.get('win_rate', 50)
         
-        score = (kda * 0.7) + (win_rate * 0.3)
+        # Scale KDA: 2.0 = baseline, each 0.5 KDA above = +1 point
+        kda_score = 5 + ((kda - 2.0) * 2)
+        
+        # Scale Win Rate: 50% = baseline, each 5% above = +1 point
+        wr_score = 5 + ((win_rate - 50) / 5)
+        
+        # Weighted average: 60% KDA, 40% Win Rate
+        score = (kda_score * 0.6) + (wr_score * 0.4)
+        
         return self._normalize_score(score)
     
     def _calculate_relentless(self, stats: Dict) -> int:
