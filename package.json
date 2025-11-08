@@ -1,0 +1,13 @@
+{
+  "name": "runic-resonance",
+  "version": "1.0.0",
+  "description": "League of Legends personality analyzer",
+  "scripts": {
+    "start": "bash start.sh",
+    "start-simple": "bash start-simple.sh",
+    "build": "cd frontend && yarn build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
