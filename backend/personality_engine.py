@@ -247,10 +247,19 @@ class PersonalityEngine:
         return self._normalize_score(score)
     
     def _calculate_adaptive(self, stats: Dict) -> int:
-        """Calculate Adaptive trait score."""
+        """
+        Calculate Adaptive trait score.
+        Balanced: 5/10 = 3 champs, 7/10 = 5 champs, 10/10 = 8+ champs
+        More forgiving for players with smaller pools
+        """
         champion_diversity = stats.get('champion_pool_size', 1)
         
-        score = champion_diversity / 2
+        # 1 champ = 1pt, 3 champs = 5pts, 5 champs = 7pts, 8 champs = 10pts
+        if champion_diversity <= 1:
+            score = 1
+        else:
+            score = 1 + (champion_diversity - 1) * 1.3
+        
         return self._normalize_score(score)
     
     def _calculate_enlightened(self, stats: Dict) -> int:
