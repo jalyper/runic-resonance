@@ -49,34 +49,59 @@ class RiotAPI:
             'oce': 'sea'
         }
     
-    def get_summoner_by_name(self, summoner_name: str, region: str = 'na') -> Optional[Dict]:
+    def get_account_by_riot_id(self, game_name: str, tag_line: str, region: str = 'na') -> Optional[Dict]:
         """
-        Get summoner information by summoner name.
+        Get account information using Riot ID (GameName#TagLine).
         
         Args:
-            summoner_name: The summoner's in-game name
+            game_name: The game name part of Riot ID
+            tag_line: The tag line part of Riot ID (after #)
             region: Region code (na, euw, kr, etc.)
             
         Returns:
-            Dictionary with summoner data including puuid, summonerId, etc.
+            Dictionary with account data including puuid
         """
-        platform = self.region_to_platform.get(region.lower(), 'na1')
-        url = f"https://{platform}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}"
+        routing = self.region_to_routing.get(region.lower(), 'americas')
+        url = f"https://{routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{game_name}/{tag_line}"
         
         try:
             response = requests.get(url, headers=self.headers, timeout=10)
             response.raise_for_status()
             data = response.json()
-            logger.info(f"Successfully fetched summoner data for {summoner_name}")
+            logger.info(f"Successfully fetched account data for {game_name}#{tag_line}")
             return data
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
-                logger.error(f"Summoner {summoner_name} not found in region {region}")
+                logger.error(f"Account {game_name}#{tag_line} not found in region {region}")
                 return None
-            logger.error(f"HTTP error fetching summoner: {e}")
+            logger.error(f"HTTP error fetching account: {e}")
             raise
         except Exception as e:
-            logger.error(f"Error fetching summoner {summoner_name}: {e}")
+            logger.error(f"Error fetching account {game_name}#{tag_line}: {e}")
+            raise
+    
+    def get_summoner_by_puuid(self, puuid: str, region: str = 'na') -> Optional[Dict]:
+        """
+        Get summoner information by PUUID.
+        
+        Args:
+            puuid: Player's unique identifier
+            region: Region code (na, euw, kr, etc.)
+            
+        Returns:
+            Dictionary with summoner data including summonerId, level, etc.
+        """
+        platform = self.region_to_platform.get(region.lower(), 'na1')
+        url = f"https://{platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}"
+        
+        try:
+            response = requests.get(url, headers=self.headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            logger.info(f"Successfully fetched summoner data by PUUID")
+            return data
+        except Exception as e:
+            logger.error(f"Error fetching summoner by PUUID: {e}")
             raise
     
     def get_match_ids(self, puuid: str, region: str = 'na', count: int = 20) -> List[str]:
