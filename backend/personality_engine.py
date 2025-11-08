@@ -312,17 +312,26 @@ class PersonalityEngine:
             else:
                 champion_scores[champion]['play_bonus'] = 'None'
         
-        # Sort all champions by total score
+        # Sort all champions by slots filled, then total score, then games played
         sorted_champions = sorted(
             champion_scores.items(), 
-            key=lambda x: (x[1]['slots_filled'], x[1]['total_score']), 
+            key=lambda x: (
+                x[1]['slots_filled'],           # Primary: Most slots filled
+                x[1]['total_score'],            # Secondary: Highest trait scores
+                x[1].get('games_played', 0)     # Tertiary: Most games played (tie-breaker)
+            ), 
             reverse=True
         )
         
         # Get top 3 champions
         top_champions = []
         for i, (champ, data) in enumerate(sorted_champions[:3]):
-            resonance = min(100, (data['total_score'] / 30) * 100)
+            # Calculate resonance with play-time weighting
+            base_resonance = (data['total_score'] / 50) * 100  # Changed denominator to allow >100%
+            
+            # Cap at 100% but allow play time to push higher scores
+            resonance = min(100, base_resonance)
+            
             top_champions.append({
                 'rank': i + 1,
                 'champion': champ,
@@ -330,7 +339,9 @@ class PersonalityEngine:
                 'matching_traits': data['traits'],
                 'trait_details': data['trait_details'],
                 'resonance_strength': resonance,
-                'play_bonus': data.get('play_bonus', 'None')
+                'play_bonus': data.get('play_bonus', 'None'),
+                'games_played': data.get('games_played', 0),
+                'play_rate': data.get('play_rate', 0)
             })
         
         # Ensure we have at least 1 champion
