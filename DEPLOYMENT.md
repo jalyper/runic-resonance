@@ -1,12 +1,18 @@
 # Deployment Guide - Railway
 
-## Quick Deploy to Railway
+## ⚡ Quick Deploy to Railway
 
 ### Prerequisites
 - Railway account (sign up at [railway.app](https://railway.app))
-- GitHub account
-- Your AWS credentials
-- Your Riot API key
+- GitHub account  
+- Your AWS credentials (for AWS Bedrock AI)
+- Your Riot API key (get at [developer.riotgames.com](https://developer.riotgames.com))
+
+### 🚨 Important Note
+This app requires:
+- **MongoDB** (Railway provides this)
+- **AWS Bedrock** access with Claude 3.5 Sonnet and Titan Image Generator
+- **Riot Games API key** (free dev key expires in 24 hours)
 
 ---
 
