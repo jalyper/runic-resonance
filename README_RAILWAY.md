@@ -22,6 +22,9 @@ cd runic-resonance
 1. Go to [railway.app](https://railway.app)
 2. Click "New Project" → "Deploy from GitHub repo"
 3. Select this repository
+4. **Important:** Railway should use **Nixpacks** (not Docker)
+   - Check Settings → Builder is set to "Nixpacks"
+   - If you see Docker errors, see [RAILWAY_FIX.md](./RAILWAY_FIX.md)
 
 ### 3️⃣ Add MongoDB
 
