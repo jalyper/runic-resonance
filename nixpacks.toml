@@ -1,0 +1,16 @@
+[phases.setup]
+nixPkgs = ["python311", "nodejs-18_x", "yarn", "mongodb"]
+
+[phases.install]
+cmds = [
+    "cd backend && pip install -r requirements.txt",
+    "cd frontend && yarn install"
+]
+
+[phases.build]
+cmds = [
+    "cd frontend && yarn build"
+]
+
+[start]
+cmd = "supervisord -c /app/supervisord.conf -n"
