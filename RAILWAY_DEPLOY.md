@@ -84,14 +84,32 @@ Visit your Railway URL and test:
 
 ## 🔧 Troubleshooting
 
-### Build Fails
+### Build Fails: "Nixpacks was unable to generate a build plan"
 
-**Problem:** Nixpacks can't detect build
+**Problem:** Railway can't detect the build configuration
+
+**Solutions:**
+1. Verify `nixpacks.toml` exists in root directory
+2. Check Railway Settings → Builder is set to "Nixpacks"
+3. If Docker is being used, manually switch to Nixpacks
+
+### Build Fails: Docker "yarn.lock not found"
+
+**Problem:** Railway is trying to use Docker instead of Nixpacks
+
+**Solution:**
+1. Go to Railway Settings → Deploy
+2. Find "Builder" section
+3. Change from "Docker" to "Nixpacks"
+4. Redeploy
+
+### Build Fails: General
 
 **Solution:** Ensure these files exist in root:
 - `nixpacks.toml`
 - `supervisord.conf`
 - `Procfile`
+- `railway.json`
 
 ### Frontend Can't Reach Backend
 
