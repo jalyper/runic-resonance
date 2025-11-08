@@ -153,24 +153,30 @@ class RiotAPI:
             logger.error(f"Error fetching match {match_id}: {e}")
             return None
     
-    def get_player_stats(self, summoner_name: str, region: str = 'na', match_count: int = 20) -> Dict:
+    def get_player_stats(self, game_name: str, tag_line: str, region: str = 'na', match_count: int = 20) -> Dict:
         """
         Get aggregated player statistics from recent matches.
         
         Args:
-            summoner_name: Player's summoner name
+            game_name: Player's game name (before #)
+            tag_line: Player's tag line (after #)
             region: Region code
             match_count: Number of recent matches to analyze
             
         Returns:
             Dictionary with aggregated statistics
         """
-        # Get summoner info
-        summoner = self.get_summoner_by_name(summoner_name, region)
-        if not summoner:
-            raise ValueError(f"Summoner {summoner_name} not found")
+        # Get account info using Riot ID
+        account = self.get_account_by_riot_id(game_name, tag_line, region)
+        if not account:
+            raise ValueError(f"Account {game_name}#{tag_line} not found")
         
-        puuid = summoner['puuid']
+        puuid = account['puuid']
+        
+        # Get summoner info for level
+        summoner = self.get_summoner_by_puuid(puuid, region)
+        if not summoner:
+            raise ValueError(f"Summoner data not found for {game_name}#{tag_line}")
         
         # Get match IDs
         match_ids = self.get_match_ids(puuid, region, match_count)
