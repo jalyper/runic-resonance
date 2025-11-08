@@ -14,14 +14,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleAnalyze = async (summonerName, region) => {
+  const handleAnalyze = async (riotId, region) => {
     setIsLoading(true);
     setError(null);
     setCurrentView('analyzing');
 
     try {
       const response = await axios.post(`${API}/analyze`, {
-        summoner_name: summonerName,
+        riot_id: riotId,
         region: region,
         match_count: 20
       });
@@ -32,7 +32,7 @@ function App() {
       console.error('Analysis error:', err);
       setError(
         err.response?.data?.detail || 
-        'Failed to analyze summoner. Please check the name and region.'
+        'Failed to analyze account. Please check your Riot ID (GameName#TAG) and region.'
       );
       setCurrentView('landing');
     } finally {
