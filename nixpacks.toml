@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python311", "nodejs-18_x", "yarn", "supervisor"]
+nixPkgs = ["python311", "nodejs-18_x", "yarn"]
 
 [phases.install]
 cmds = [
@@ -14,4 +14,4 @@ cmds = [
 ]
 
 [start]
-cmd = "supervisord -c supervisord.conf -n"
+cmd = "bash start.sh"
