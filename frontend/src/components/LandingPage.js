@@ -59,20 +59,23 @@ export default function LandingPage({ onAnalyze, error }) {
         {/* Search Form */}
         <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-purple-500/20">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Summoner Name Input */}
+            {/* Riot ID Input */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-purple-300 flex items-center space-x-2">
                 <Search className="w-4 h-4" />
-                <span>Summoner Name</span>
+                <span>Riot ID</span>
               </label>
               <input
                 type="text"
-                value={summonerName}
-                onChange={(e) => setSummonerName(e.target.value)}
-                placeholder="Enter your summoner name..."
+                value={riotId}
+                onChange={(e) => setRiotId(e.target.value)}
+                placeholder="GameName#TAG (e.g., Jalyper#piano)"
                 className="w-full px-4 py-3 bg-slate-900/50 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all"
                 required
               />
+              <p className="text-xs text-purple-300/50">
+                💡 Use your Riot ID format: GameName#TagLine
+              </p>
             </div>
 
             {/* Region Select */}
