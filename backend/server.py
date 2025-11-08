@@ -202,7 +202,7 @@ async def analyze_summoner(request: AnalysisRequest):
             logger.error(f"Database error: {e}")
             # Continue even if DB save fails
         
-        logger.info(f"Analysis complete for {request.summoner_name}")
+        logger.info(f"Analysis complete for {stats['summoner_name']}")
         return response
         
     except HTTPException:
