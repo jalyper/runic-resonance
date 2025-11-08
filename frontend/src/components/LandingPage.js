@@ -16,13 +16,13 @@ const REGIONS = [
 ];
 
 export default function LandingPage({ onAnalyze, error }) {
-  const [summonerName, setSummonerName] = useState('');
+  const [riotId, setRiotId] = useState('');
   const [region, setRegion] = useState('na');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (summonerName.trim()) {
-      onAnalyze(summonerName.trim(), region);
+    if (riotId.trim()) {
+      onAnalyze(riotId.trim(), region);
     }
   };
 
