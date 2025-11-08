@@ -60,7 +60,8 @@ class PersonalityEngine:
             "score": protector_score,
             "description": "Shield-bearer of allies, standing guard against the darkness",
             "champions": self.TRAIT_CHAMPIONS["The Protector"],
-            "lore": "Like Braum with his unbreakable shield, you stand between danger and your companions"
+            "lore": "Like Braum with his unbreakable shield, you stand between danger and your companions",
+            "data_source": self.TRAIT_DATA_SOURCES["The Protector"]
         })
         
         # 2. The Tactician - Vision score, strategic play, map awareness
