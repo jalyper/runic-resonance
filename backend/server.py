@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 # Define Models
 class AnalysisRequest(BaseModel):
     """Request model for personality analysis."""
-    summoner_name: str = Field(..., description="League of Legends summoner name")
+    riot_id: str = Field(..., description="Riot ID in format GameName#TagLine")
     region: str = Field(default="na", description="Region code (na, euw, kr, etc.)")
     match_count: int = Field(default=20, ge=5, le=50, description="Number of recent matches to analyze")
 
