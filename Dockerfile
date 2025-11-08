@@ -1,17 +1,17 @@
 # Multi-stage build for Runic Resonance
 FROM python:3.11-slim as backend-builder
 
-WORKDIR /app/backend
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
 FROM node:18-slim as frontend-builder
 
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install --frozen-lockfile
-COPY frontend/ .
-RUN yarn build
+WORKDIR /app
+COPY frontend/package.json frontend/yarn.lock ./frontend/
+RUN cd frontend && yarn install --frozen-lockfile
+COPY frontend/ ./frontend/
+RUN cd frontend && yarn build
 
 # Final stage
 FROM python:3.11-slim
