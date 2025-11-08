@@ -71,7 +71,8 @@ class PersonalityEngine:
             "score": tactician_score,
             "description": "Master strategist who sees the battlefield's hidden patterns",
             "champions": self.TRAIT_CHAMPIONS["The Tactician"],
-            "lore": "Like Swain's ravens, your vision extends across Runeterra, anticipating every move"
+            "lore": "Like Swain's ravens, your vision extends across Runeterra, anticipating every move",
+            "data_source": self.TRAIT_DATA_SOURCES["The Tactician"]
         })
         
         # 3. The Disciplined - CS consistency, gold efficiency, mechanical precision
@@ -81,7 +82,8 @@ class PersonalityEngine:
             "score": disciplined_score,
             "description": "Unwavering dedication to perfecting your craft through endless practice",
             "champions": self.TRAIT_CHAMPIONS["The Disciplined"],
-            "lore": "Like Garen's devotion to Demacia, your discipline never wavers"
+            "lore": "Like Garen's devotion to Demacia, your discipline never wavers",
+            "data_source": self.TRAIT_DATA_SOURCES["The Disciplined"]
         })
         
         # 4. The Fearless - Fight participation, first bloods, aggression
@@ -91,7 +93,8 @@ class PersonalityEngine:
             "score": fearless_score,
             "description": "Warrior who charges into battle without hesitation or doubt",
             "champions": self.TRAIT_CHAMPIONS["The Fearless"],
-            "lore": "Like Leona basking in the sun's glory, you embrace combat with radiant courage"
+            "lore": "Like Leona basking in the sun's glory, you embrace combat with radiant courage",
+            "data_source": self.TRAIT_DATA_SOURCES["The Fearless"]
         })
         
         # 5. The Resilient - Damage taken, deaths avoided, comeback potential
@@ -101,7 +104,8 @@ class PersonalityEngine:
             "score": resilient_score,
             "description": "Indomitable spirit that endures through the harshest trials",
             "champions": self.TRAIT_CHAMPIONS["The Resilient"],
-            "lore": "Like Sion who conquered death itself, you refuse to stay down"
+            "lore": "Like Sion who conquered death itself, you refuse to stay down",
+            "data_source": self.TRAIT_DATA_SOURCES["The Resilient"]
         })
         
         # 6. The Wanderer - Solo plays, roaming patterns, independence
@@ -111,7 +115,8 @@ class PersonalityEngine:
             "score": wanderer_score,
             "description": "Lone traveler following their own path across the Rift",
             "champions": self.TRAIT_CHAMPIONS["The Wanderer"],
-            "lore": "Like Yasuo's journey for redemption, you forge your own destiny"
+            "lore": "Like Yasuo's journey for redemption, you forge your own destiny",
+            "data_source": self.TRAIT_DATA_SOURCES["The Wanderer"]
         })
         
         # 7. The Adaptive - Champion diversity, versatile builds, flexible play
@@ -121,7 +126,8 @@ class PersonalityEngine:
             "score": adaptive_score,
             "description": "Shapeshifter who thrives by embracing change and variety",
             "champions": self.TRAIT_CHAMPIONS["The Adaptive"],
-            "lore": "Like Neeko who becomes anyone, you master every form and strategy"
+            "lore": "Like Neeko who becomes anyone, you master every form and strategy",
+            "data_source": self.TRAIT_DATA_SOURCES["The Adaptive"]
         })
         
         # 8. The Enlightened - High KDA, smart decisions, wisdom in combat
@@ -131,7 +137,8 @@ class PersonalityEngine:
             "score": enlightened_score,
             "description": "Seeker of perfect balance between aggression and restraint",
             "champions": self.TRAIT_CHAMPIONS["The Enlightened"],
-            "lore": "Like Karma who weighs every action, you achieve harmony through wisdom"
+            "lore": "Like Karma who weighs every action, you achieve harmony through wisdom",
+            "data_source": self.TRAIT_DATA_SOURCES["The Enlightened"]
         })
         
         # 9. The Relentless - Kill participation, never giving up, persistence
@@ -141,7 +148,8 @@ class PersonalityEngine:
             "score": relentless_score,
             "description": "Unstoppable force bound by singular purpose and determination",
             "champions": self.TRAIT_CHAMPIONS["The Relentless"],
-            "lore": "Like Viego's endless pursuit, you never rest until victory is yours"
+            "lore": "Like Viego's endless pursuit, you never rest until victory is yours",
+            "data_source": self.TRAIT_DATA_SOURCES["The Relentless"]
         })
         
         # 10. The Healer - Support patterns, enabler, team-focused
@@ -151,7 +159,8 @@ class PersonalityEngine:
             "score": healer_score,
             "description": "Guardian spirit who mends wounds and lifts fallen allies",
             "champions": self.TRAIT_CHAMPIONS["The Healer"],
-            "lore": "Like Soraka who sacrifices herself for others, you embody compassion"
+            "lore": "Like Soraka who sacrifices herself for others, you embody compassion",
+            "data_source": self.TRAIT_DATA_SOURCES["The Healer"]
         })
         
         return traits
