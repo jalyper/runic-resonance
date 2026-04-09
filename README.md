@@ -1,403 +1,201 @@
-# RUNIC RESONANCE
+# Runic Resonance
 
-**Discover your League of Legends spirit champion through AI-powered personality analysis**
+**A full-stack web app that analyzes a League of Legends player's match history and uses AWS Bedrock AI to reveal their "spirit champion" and generate a personalized mystical narrative.**
 
-Built for the Rift Rewind Hackathon 2025 using Riot Games API + AWS Bedrock AI
+Pull a Riot ID, fetch the last 50 ranked games via the Riot Games API, calculate 10 behavioral personality traits from the match data, match the player to champions through a 3-slot resonance system, then generate a personalized narrative with Claude 3.5 Sonnet and trait artwork with Amazon Titan Image Generator v2.
 
----
+Originally built for the 2025 Rift Rewind Hackathon. MIT-licensed.
 
-## 🎯 What Is This?
+## Architecture at a glance
 
-Runic Resonance analyzes your League of Legends match history to reveal which champion's spirit resonates within you. By examining your playstyle across 10 personality traits, we discover your true essence in the world of Runeterra - then use AI to generate a mystical reading and beautiful artwork.
+```
+ ┌──────────────────────┐       ┌──────────────────────────┐
+ │  React 19 frontend   │  ──>  │  FastAPI backend          │
+ │  (CRA + craco, only  │       │  (uvicorn, port 8001)     │
+ │   axios + lucide)    │       │                           │
+ └──────────────────────┘       │  ┌─────────────────────┐  │
+                                │  │ riot_api.py         │──┼──> Riot Games API
+                                │  │ personality_engine  │  │    (match history)
+                                │  │ bedrock_ai.py       │──┼──> AWS Bedrock
+                                │  │ image_generator.py  │──┼──> Claude 3.5 Sonnet
+                                │  └─────────────────────┘  │    Titan Image v2
+                                │                           │
+                                │  MongoDB (Motor async)    │
+                                └──────────────────────────┘
+```
 
-**Key Features:**
-- Analyzes 50 recent ranked games via Riot Games API
-- Calculates 10 lore-based personality traits from behavioral data
-- 3-slot champion matching system with "trait farming" mechanics
-- AI-generated mystical narratives (AWS Bedrock Claude 3.5 Sonnet)
-- AI-generated trait artwork (AWS Bedrock Titan Image Generator v2)
-- Beautiful, responsive UI with Arcane-inspired aesthetics
+The personality engine computes 10 lore-based traits (aggression, patience, strategy, etc.) from raw match telemetry, matches them to a curated pool of champions through a 3-slot "trait farming" mechanic, and passes the top match into Bedrock for a per-player narrative. Trait artwork is generated once and cached as static PNGs in `backend/static/traits/`.
 
----
+## Tech stack
 
-## 🚀 Quick Start for Judges
+| Layer | Tool |
+|-------|------|
+| Frontend | React 19, CRA + craco, Tailwind CSS, axios, lucide-react |
+| Backend | FastAPI, uvicorn, Motor (async MongoDB), Pydantic |
+| Data store | MongoDB |
+| External APIs | Riot Games API (match history, account lookup) |
+| AI | AWS Bedrock — Claude 3.5 Sonnet v2 (narratives), Titan Image Generator v2 (trait art) |
+
+## Running locally
 
 ### Prerequisites
 
-- **Docker Desktop** (recommended) OR:
-  - Python 3.11+
-  - Node.js 18+
-  - MongoDB
-  - Yarn package manager
+- Python 3.11+
+- Node.js 18+
+- Yarn (`npm install -g yarn`)
+- MongoDB (local install or Docker)
+- A Riot Games dev API key — get one at [developer.riotgames.com](https://developer.riotgames.com) (expires every 24 hours)
+- An AWS account with Bedrock access (Claude 3.5 Sonnet v2 + Titan Image Generator v2 enabled in `us-east-1`)
 
-### Option 1: Using Existing Deployment (If Available)
-
-If you have access to the deployed version, simply:
-1. Navigate to the deployment URL
-2. Enter a Riot ID in the format: `GameName#TAG` (e.g., `Jalyper#piano`)
-3. Select your region
-4. Click "Reveal My Spirit Champion"
-
-### Option 2: Run Locally (Full Experience)
-
-**⚠️ IMPORTANT: You'll need AWS credentials for full functionality**
-
-The app requires:
-- **Riot Games API Key** (24-hour development key available at [developer.riotgames.com](https://developer.riotgames.com))
-- **AWS Account** with Bedrock access (for AI features)
-
-#### Step 1: Clone the Repository
+### Setup
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/jalyper/runic-resonance.git
 cd runic-resonance
 ```
 
-#### Step 2: Set Up Environment Variables
+**Backend:**
 
-Create `/app/backend/.env`:
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+Create `backend/.env`:
 
 ```env
-# MongoDB (local)
 MONGO_URL="mongodb://localhost:27017"
 DB_NAME="runic_resonance"
 CORS_ORIGINS="*"
 
-# Riot Games API
-RIOT_API_KEY="RGAPI-your-24-hour-dev-key-here"
+RIOT_API_KEY="RGAPI-your-24-hour-dev-key"
 
-# AWS Bedrock (for AI features)
-AWS_ACCESS_KEY_ID="your-aws-access-key"
-AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+AWS_ACCESS_KEY_ID="..."
+AWS_SECRET_ACCESS_KEY="..."
 AWS_REGION="us-east-1"
 BEDROCK_MODEL_ID="anthropic.claude-3-5-sonnet-20241022-v2:0"
 ```
 
-Create `/app/frontend/.env`:
+**Frontend:**
+
+```bash
+cd ../frontend
+yarn install
+```
+
+Create `frontend/.env`:
 
 ```env
 REACT_APP_BACKEND_URL="http://localhost:8001"
 ```
 
-#### Step 3: Install Dependencies
+**Start MongoDB** (if not already running):
 
-**Backend:**
 ```bash
-cd /app/backend
-pip install -r requirements.txt
+docker run -d -p 27017:27017 --name runic-mongo mongo:latest
 ```
 
-**Frontend:**
-```bash
-cd /app/frontend
-yarn install
-```
+### Run
 
-#### Step 4: Start MongoDB
+Two terminals during development:
 
 ```bash
-# Using Docker (recommended)
-docker run -d -p 27017:27017 --name mongodb mongo:latest
-
-# OR use your local MongoDB installation
-mongod --dbpath /your/data/path
-```
-
-#### Step 5: Start the Services
-
-**Terminal 1 - Backend:**
-```bash
-cd /app/backend
+# Terminal 1 — backend
+cd backend
 uvicorn server:app --host 0.0.0.0 --port 8001 --reload
-```
 
-**Terminal 2 - Frontend:**
-```bash
-cd /app/frontend
+# Terminal 2 — frontend
+cd frontend
 yarn start
 ```
 
-The app will be available at: **http://localhost:3000**
+Or a single-command production-ish path using the bundled process manager:
 
----
+```bash
+cd frontend && yarn build && cd ..
+python start.py
+```
 
-## 📖 How to Use
+`start.py` launches `uvicorn` on 8001 and serves the built bundle via `npx serve` on 3000. It expects `frontend/build/` to exist — run `yarn build` first.
 
-1. **Enter Your Riot ID**
-   - Format: `GameName#TAG` (e.g., `Doublelift#NA1`, `Faker#KR1`)
-   - Select your region from the dropdown
+Open [http://localhost:3000](http://localhost:3000) once both are running.
 
-2. **Wait for Analysis**
-   - The app fetches your last 50 ranked games
-   - Calculates 10 personality traits
-   - Matches you with champions
-   - Generates AI narrative (20-40 seconds)
+## How to use
 
-3. **View Your Results**
-   - See your spirit champion with resonance %
-   - Check which traits you unlocked (the "slots")
-   - Read your personalized AI-generated mystical reading
-   - See runner-up champions
+1. **Enter a Riot ID** — format is `GameName#TAG` (e.g., `Doublelift#NA1`, `Faker#KR1`). Select the appropriate region from the dropdown.
+2. **Wait for analysis** — the backend fetches the last 50 ranked games, calculates traits, matches champions, and generates an AI narrative. Total time is typically 20-40 seconds.
+3. **Read your result** — spirit champion with resonance percentage, unlocked trait slots, generated narrative, and runner-up matches.
 
-4. **Understand the Slots**
-   - Each champion has 3 trait slots
-   - Score 7+ on a trait to unlock it
-   - 3/3 slots = "Perfect Resonance" achievement
-   - Playing a champion increases its resonance
+The account needs to have at least 30 ranked games and must use the modern Riot ID format (the old summoner-name API is deprecated).
 
----
+## AWS Bedrock setup
 
-## 🎨 Tech Stack
+1. Create an IAM user with the `AmazonBedrockFullAccess` policy.
+2. Create access keys and add them to `backend/.env`.
+3. In the AWS console, enable model access for Claude 3.5 Sonnet v2 and Titan Image Generator v2 in the `us-east-1` region. Most accounts have this enabled by default as of 2025.
 
-**Backend:**
-- FastAPI (Python web framework)
-- MongoDB (data storage)
-- Boto3 (AWS SDK)
-- Riot Games API (match data)
+**Cost estimate:** roughly $0.003 per analysis (Claude 3.5 Sonnet) plus a one-time ~$0.04 to generate the 10 trait images via Titan.
 
-**Frontend:**
-- React 18
-- Tailwind CSS
-- Axios (API calls)
-- Lucide React (icons)
+## Pre-generating trait images
 
-**AI & ML:**
-- AWS Bedrock (managed AI service)
-- Claude 3.5 Sonnet v2 (text generation)
-- Amazon Titan Image Generator v2 (artwork)
+Trait artwork is generated once and cached as static PNGs in `backend/static/traits/`. The repo ships with the pre-generated set. If you want to regenerate them (changes the art style or prompts), run:
 
-**Infrastructure:**
-- Docker containers
-- Supervisor (process management)
-- Nginx (reverse proxy)
+```bash
+cd backend
+python generate_trait_images.py
+```
 
----
+This takes ~2 minutes and requires valid AWS Bedrock credentials.
 
-## 🔑 API Keys & Credentials
-
-### Riot Games API Key
-
-1. Go to [developer.riotgames.com](https://developer.riotgames.com)
-2. Sign in with your Riot account
-3. Generate a **Development API Key** (valid for 24 hours)
-4. Add to `backend/.env` as `RIOT_API_KEY`
-
-### AWS Bedrock Setup
-
-1. Create AWS account at [aws.amazon.com](https://aws.amazon.com)
-2. Go to IAM → Create User → `bedrock-developer`
-3. Attach policy: `AmazonBedrockFullAccess`
-4. Create access keys
-5. Add to `backend/.env`:
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-   - `AWS_REGION="us-east-1"`
-
-**Note:** Bedrock models are automatically enabled in new AWS accounts (no manual model access request needed as of 2025).
-
----
-
-## 📊 Project Structure
+## Project structure
 
 ```
-/app/
+runic-resonance/
 ├── backend/
-│   ├── server.py              # Main FastAPI application
-│   ├── riot_api.py            # Riot Games API integration
-│   ├── personality_engine.py  # Trait calculation logic
-│   ├── bedrock_ai.py          # AWS Bedrock text generation
-│   ├── image_generator.py     # AWS Bedrock image generation
-│   ├── requirements.txt       # Python dependencies
-│   ├── .env                   # Environment variables (create this)
-│   └── static/traits/         # AI-generated trait images (10 PNGs)
-│
+│   ├── server.py              FastAPI app + endpoints
+│   ├── riot_api.py            Riot Games API integration
+│   ├── personality_engine.py  10-trait calculation logic
+│   ├── bedrock_ai.py          Bedrock Claude narrative generation
+│   ├── image_generator.py     Bedrock Titan image generation
+│   ├── generate_trait_images.py  One-time script to produce trait art
+│   ├── static/traits/         Pre-generated trait PNGs (10 files)
+│   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.js             # Main React component
+│   │   ├── App.js             Page routing
 │   │   ├── components/
 │   │   │   ├── LandingPage.js
 │   │   │   ├── AnalysisPage.js
 │   │   │   ├── ResultsPage.js
 │   │   │   └── AboutPage.js
-│   │   ├── index.css          # Global styles + fonts
-│   │   └── index.js           # React entry point
-│   ├── package.json           # Node dependencies
-│   ├── tailwind.config.js     # Tailwind configuration
-│   └── .env                   # Frontend environment (create this)
-│
-├── README.md                  # This file
-├── PROJECT_NOTES.md           # Hackathon submission narrative
-└── supervisord.conf           # Process management (if using supervisor)
+│   │   ├── index.js
+│   │   └── index.css
+│   ├── craco.config.js        @/ path alias + hot-reload toggles
+│   ├── tailwind.config.js
+│   └── package.json
+├── start.py                   Simple two-process launcher
+├── README.md                  (this file)
+├── METHODOLOGY.md             Deep dive on trait calculation
+└── PROJECT_NOTES.md           Original hackathon notes
 ```
 
----
+## Troubleshooting
 
-## 🧪 Testing the App
+- **"Account not found"** — check the Riot ID format (`GameName#TAG`, not old summoner name).
+- **"Unable to fetch data" / 403** — Riot dev API keys expire after 24 hours. Regenerate at [developer.riotgames.com](https://developer.riotgames.com).
+- **Bedrock ValidationException** — content filter blocked the prompt. The code has a fallback narrative path; this is expected occasionally.
+- **MongoDB connection errors** — make sure the Mongo container or local instance is running and the URL in `.env` points at it.
 
-### Test Accounts to Try
+## Attribution
 
-You can test with any League of Legends player's Riot ID:
+- Riot Games API via [developer.riotgames.com](https://developer.riotgames.com)
+- AWS Bedrock (Claude 3.5 Sonnet v2 + Titan Image Generator v2)
+- Champion images via Data Dragon
+- Fonts: Orbitron, Rajdhani, and Inter via Google Fonts
+- Art style inspiration: *Arcane* (Netflix)
 
-**Examples:**
-- `Jalyper#piano` (NA) - Fighter main, balanced traits
-- `Doublelift#NA1` (NA) - ADC main
-- `Faker#KR1` (Korea) - Mid lane legend
-- Any valid Riot ID with recent ranked games
+Not affiliated with or endorsed by Riot Games or Netflix.
 
-**Requirements for analysis:**
-- Account must have at least 30 ranked games in recent history
-- Must use the new Riot ID format: `GameName#TAG`
-- Old summoner names won't work (deprecated API)
+## License
 
-### Expected Behavior
-
-**Successful Analysis:**
-- Loading takes 15-30 seconds
-- Shows animated "Runes are Speaking" screen
-- Displays spirit champion with resonance %
-- Shows 3 slots (some locked, some unlocked)
-- Generates unique AI narrative
-- Shows top 3 champion matches
-
-**Common Issues:**
-- "Account not found" → Check Riot ID format
-- "Unable to fetch data" → Verify Riot API key is valid
-- "An unexpected error" → Check backend logs for details
-- Missing images → Trait images need to be pre-generated (see below)
-
----
-
-## 🎨 Pre-Generating Trait Images (Optional)
-
-The app includes 10 pre-generated AI trait images in `/app/backend/static/traits/`. If you want to regenerate them:
-
-```bash
-cd /app/backend
-python3 generate_trait_images.py
-```
-
-This will create new artwork using AWS Bedrock Titan Image Generator (~2 minutes, requires AWS credentials).
-
----
-
-## 🐛 Troubleshooting
-
-### Backend Won't Start
-
-**Check logs:**
-```bash
-# If using supervisor
-tail -f /var/log/supervisor/backend.err.log
-
-# If running manually
-# Terminal output will show errors
-```
-
-**Common fixes:**
-- Ensure MongoDB is running
-- Verify all dependencies installed: `pip install -r requirements.txt`
-- Check `.env` file exists with valid credentials
-
-### Frontend Won't Start
-
-**Common fixes:**
-- Use `yarn` not `npm` (npm can cause issues)
-- Clear cache: `yarn cache clean`
-- Delete `node_modules` and reinstall: `rm -rf node_modules && yarn install`
-- Verify `.env` has correct `REACT_APP_BACKEND_URL`
-
-### API Errors
-
-**"Forbidden" or 403 errors:**
-- Riot API key expired (24-hour limit for dev keys)
-- Get new key at [developer.riotgames.com](https://developer.riotgames.com)
-
-**"ValidationException" from AWS:**
-- Content filter blocked the request
-- This is expected for some prompts (failsafes are in place)
-
-### MongoDB Connection Issues
-
-**Can't connect to MongoDB:**
-- Ensure MongoDB is running: `mongod --version`
-- Check connection string in `.env`
-- Try default: `mongodb://localhost:27017`
-
----
-
-## 📈 Performance Notes
-
-**Analysis Speed:**
-- Riot API calls: ~8-12 seconds (fetching 50 games)
-- Trait calculation: <1 second
-- AI narrative generation: 8-12 seconds (AWS Bedrock)
-- Total: ~20-40 seconds per analysis
-
-**Rate Limits:**
-- Riot API: 100 requests per 2 minutes
-- AWS Bedrock: No hard limit (pay per request)
-- MongoDB: No limit for local usage
-
-**Costs:**
-- Riot API: **Free** (development key)
-- AWS Bedrock Claude: ~$0.003 per analysis
-- AWS Bedrock Titan Images: ~$0.004 per image (one-time generation)
-- MongoDB: **Free** (local)
-
----
-
-## 🏆 Hackathon Submission Details
-
-**Built for:** Rift Rewind Hackathon 2025  
-**Category:** AI-Powered League of Legends Application  
-**Development Time:** 3 days  
-**Team Size:** Solo project
-
-**Key Innovations:**
-- "Trait farming" mechanic encouraging positive gameplay
-- Lore-based personality system (not just mechanics)
-- 3-slot champion resonance with play-rate bonuses
-- AI-generated Arcane-style artwork for each trait
-- Balanced formulas tested with real player profiles
-
----
-
-## 📝 License & Attribution
-
-**APIs & Services Used:**
-- Riot Games API ([developer.riotgames.com](https://developer.riotgames.com))
-- AWS Bedrock ([aws.amazon.com/bedrock](https://aws.amazon.com/bedrock))
-- Data Dragon (champion images)
-
-**Fonts:**
-- Orbitron by Matt McInerney (Google Fonts)
-- Rajdhani by Indian Type Foundry (Google Fonts)
-- Inter by Rasmus Andersson (Google Fonts)
-
-**Art Style Inspiration:**
-- Arcane (Netflix series) - for trait image prompts
-- League of Legends lore and universe
-
----
-
-## 💬 Support & Questions
-
-For hackathon judges:
-- Check `PROJECT_NOTES.md` for full development narrative
-- View `About` page in the app for user-facing explanation
-- All code is documented with comments
-- Backend logs provide detailed error information
-
-**Technical Questions?**
-- Backend: Check FastAPI docs at `/docs` endpoint
-- Frontend: React DevTools show component state
-- Database: MongoDB Compass for visual inspection
-
----
-
-**May the Runes guide your path, Summoner.**
-
----
-
-*Built with passion for League of Legends and AI innovation.*  
-*Rift Rewind Hackathon 2025*
+MIT. See the repository for the license text.
