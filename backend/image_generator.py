@@ -137,17 +137,21 @@ class TraitImageGenerator:
             logger.error(f"Error generating image for {trait_name}: {e}")
             return None
     
-    def generate_all_trait_images(self, output_dir: str = "/app/backend/static/traits") -> dict:
+    def generate_all_trait_images(self, output_dir: str | None = None) -> dict:
         """
         Generate images for all 10 traits and save them.
-        
+
         Args:
-            output_dir: Directory to save images
-            
+            output_dir: Directory to save images. Defaults to
+                `backend/static/traits` relative to this module.
+
         Returns:
             Dictionary mapping trait names to base64 image data
         """
         import os
+        from pathlib import Path
+        if output_dir is None:
+            output_dir = str(Path(__file__).resolve().parent / "static" / "traits")
         os.makedirs(output_dir, exist_ok=True)
         
         results = {}

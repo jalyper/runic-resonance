@@ -1,12 +1,16 @@
 {
   "name": "runic-resonance",
   "version": "1.0.0",
-  "description": "League of Legends personality analyzer",
+  "description": "League of Legends personality analyzer powered by AWS Bedrock AI and the Riot Games API.",
+  "author": "Keaton Anderson",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jalyper/runic-resonance.git"
+  },
+  "homepage": "https://github.com/jalyper/runic-resonance",
   "scripts": {
     "start": "python3 start.py",
-    "start:bash": "bash start.sh",
-    "start:simple": "bash start-simple.sh",
-    "start:supervisor": "supervisord -c /app/supervisord.conf -n",
     "build": "cd frontend && yarn build"
   },
   "engines": {
