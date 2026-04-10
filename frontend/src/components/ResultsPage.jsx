@@ -169,7 +169,7 @@ export default function ResultsPage({ data, onReset, onShowAbout }) {
                       {/* Filled Slot - AI-Generated Artwork */}
                       <div className="absolute inset-0">
                         <img
-                          src={`${process.env.REACT_APP_BACKEND_URL}/api/trait-images/${encodeURIComponent(trait.name)}`}
+                          src={`${import.meta.env.VITE_BACKEND_URL}/api/trait-images/${encodeURIComponent(trait.name)}`}
                           alt={trait.name}
                           className="w-full h-full object-cover rounded-xl"
                           onError={(e) => {

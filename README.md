@@ -11,7 +11,7 @@ Originally built for the 2025 Rift Rewind Hackathon. MIT-licensed.
 ```
  ┌──────────────────────┐       ┌──────────────────────────┐
  │  React 19 frontend   │  ──>  │  FastAPI backend          │
- │  (CRA + craco, only  │       │  (uvicorn, port 8001)     │
+ │  (Vite, only         │       │  (uvicorn, port 8001)     │
  │   axios + lucide)    │       │                           │
  └──────────────────────┘       │  ┌─────────────────────┐  │
                                 │  │ riot_api.py         │──┼──> Riot Games API
@@ -30,7 +30,7 @@ The personality engine computes 10 lore-based traits (aggression, patience, stra
 
 | Layer | Tool |
 |-------|------|
-| Frontend | React 19, CRA + craco, Tailwind CSS, axios, lucide-react |
+| Frontend | React 19, Vite, Tailwind CSS, axios, lucide-react |
 | Backend | FastAPI, uvicorn, Motor (async MongoDB), Pydantic |
 | Data store | MongoDB |
 | External APIs | Riot Games API (match history, account lookup) |
@@ -42,7 +42,7 @@ The personality engine computes 10 lore-based traits (aggression, patience, stra
 
 - Python 3.11+
 - Node.js 18+
-- Yarn (`npm install -g yarn`)
+- npm 9+ (ships with Node 18)
 - MongoDB (local install or Docker)
 - A Riot Games dev API key — get one at [developer.riotgames.com](https://developer.riotgames.com) (expires every 24 hours)
 - An AWS account with Bedrock access (Claude 3.5 Sonnet v2 + Titan Image Generator v2 enabled in `us-east-1`)
@@ -80,13 +80,13 @@ BEDROCK_MODEL_ID="anthropic.claude-3-5-sonnet-20241022-v2:0"
 
 ```bash
 cd ../frontend
-yarn install
+npm install
 ```
 
 Create `frontend/.env`:
 
 ```env
-REACT_APP_BACKEND_URL="http://localhost:8001"
+VITE_BACKEND_URL="http://localhost:8001"
 ```
 
 **Start MongoDB** (if not already running):
@@ -106,17 +106,17 @@ uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 
 # Terminal 2 — frontend
 cd frontend
-yarn start
+npm run dev
 ```
 
 Or a single-command production-ish path using the bundled process manager:
 
 ```bash
-cd frontend && yarn build && cd ..
+cd frontend && npm run build && cd ..
 python start.py
 ```
 
-`start.py` launches `uvicorn` on 8001 and serves the built bundle via `npx serve` on 3000. It expects `frontend/build/` to exist — run `yarn build` first.
+`start.py` launches `uvicorn` on 8001 and serves the built bundle via `npx serve` on 3000. It expects `frontend/build/` to exist — run `npm run build` first.
 
 Open [http://localhost:3000](http://localhost:3000) once both are running.
 
@@ -161,16 +161,17 @@ runic-resonance/
 │   ├── static/traits/         Pre-generated trait PNGs (10 files)
 │   └── requirements.txt
 ├── frontend/
+│   ├── index.html             Vite entry HTML
 │   ├── src/
-│   │   ├── App.js             Page routing
+│   │   ├── App.jsx            Page routing
 │   │   ├── components/
-│   │   │   ├── LandingPage.js
-│   │   │   ├── AnalysisPage.js
-│   │   │   ├── ResultsPage.js
-│   │   │   └── AboutPage.js
-│   │   ├── index.js
+│   │   │   ├── LandingPage.jsx
+│   │   │   ├── AnalysisPage.jsx
+│   │   │   ├── ResultsPage.jsx
+│   │   │   └── AboutPage.jsx
+│   │   ├── main.jsx
 │   │   └── index.css
-│   ├── craco.config.js        @/ path alias + hot-reload toggles
+│   ├── vite.config.js         Vite + @ path alias
 │   ├── tailwind.config.js
 │   └── package.json
 ├── start.py                   Simple two-process launcher
