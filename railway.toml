@@ -1,7 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "supervisord -c /app/supervisord.conf -n"
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10

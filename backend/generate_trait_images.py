@@ -26,7 +26,8 @@ def main():
     
     print("\n" + "=" * 60)
     print(f"✅ Successfully generated {len(results)}/10 trait images!")
-    print(f"📁 Images saved to: /app/backend/static/traits/")
+    from pathlib import Path
+    print(f"Images saved to: {Path(__file__).resolve().parent / 'static' / 'traits'}")
     
     for trait_name in results.keys():
         safe_name = trait_name.replace(' ', '_').replace('The_', '').lower()

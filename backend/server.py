@@ -279,16 +279,14 @@ async def get_trait_image(trait_name: str):
     from image_generator import TraitImageGenerator, TRAIT_IMAGE_FALLBACKS
     from fastapi.responses import Response
     import base64
-    
-    # Try to load from static files first
-    import os
+    from pathlib import Path
+
+    # Try to load from pre-generated static files first (see generate_trait_images.py)
     safe_name = trait_name.replace(' ', '_').replace('The_', '').lower()
-    static_path = f"/app/backend/static/traits/{safe_name}.png"
-    
-    if os.path.exists(static_path):
-        with open(static_path, 'rb') as f:
-            image_data = f.read()
-        return Response(content=image_data, media_type="image/png")
+    static_path = Path(__file__).resolve().parent / "static" / "traits" / f"{safe_name}.png"
+
+    if static_path.exists():
+        return Response(content=static_path.read_bytes(), media_type="image/png")
     
     # If not cached, generate on-demand (expensive!)
     try:
