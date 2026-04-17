@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
@@ -24,11 +25,18 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    client.close()
+
+
 # Create the main app without a prefix
 app = FastAPI(
     title="Runic Resonance API",
     description="Discover your League of Legends spirit champion through AI-powered personality analysis",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Create a router with the /api prefix
@@ -311,10 +319,11 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
+_cors_origins = [o.strip() for o in os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',') if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -330,6 +339,3 @@ async def global_exception_handler(request, exc):
     )
 
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
