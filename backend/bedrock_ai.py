@@ -23,7 +23,7 @@ class BedrockAI:
             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
         )
-        self.model_id = os.environ.get('BEDROCK_MODEL_ID', 'anthropic.claude-3-5-sonnet-20241022-v2:0')
+        self.model_id = os.environ.get('BEDROCK_MODEL_ID', 'us.anthropic.claude-3-7-sonnet-20250219-v1:0')
     
     def generate_runic_narrative(
         self,
@@ -157,7 +157,7 @@ Through the mystical veil of Runic Resonance, a champion's spirit calls to yours
 
 Your essence burns brightest with the qualities of {trait_names[0]}, {trait_names[1]}, and {trait_names[2]}. Like {champion} who walks the paths of legend, you embody these ancient virtues in every battle you wage upon the Rift.
 
-The Runes speak of your journey through {spirit_champion['slots_filled']} sacred trials, each revealing another facet of your warrior spirit. Your resonance with {champion} grows stronger with every victory, every defeat, every moment you stand against the tide of chaos.
+The Runes speak of your journey through countless sacred trials, each revealing another facet of your warrior spirit. Your resonance with {champion} grows stronger with every victory, every defeat, every moment you stand against the tide of chaos.
 
 The Summoner's Rift trembles when you enter, for you carry within you the same fire that burns in {champion}'s heart. Your legend is still being written, summoner, and the Runes themselves watch with anticipation to see what destiny you will forge."""
 
