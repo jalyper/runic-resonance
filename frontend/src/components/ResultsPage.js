@@ -136,7 +136,16 @@ export default function ResultsPage({ data, onReset }) {
                 >
                   {isFilled ? (
                     <>
-                      <Unlock className="w-6 h-6 text-purple-300" />
+                      <img
+                        src={getTraitImage(trait.name)}
+                        alt={trait.name}
+                        className="w-full h-full rounded-md object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'block';
+                        }}
+                      />
+                      <Unlock className="w-6 h-6 text-purple-300" style={{ display: 'none' }} />
                       {/* Tooltip */}
                       <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-48 p-2 bg-slate-900 border border-purple-500/30 rounded-lg text-xs text-purple-200">
                         <p className="font-bold text-purple-300">{trait.name}</p>
