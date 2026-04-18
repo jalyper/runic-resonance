@@ -15,6 +15,11 @@ const getChampionIcon = (championName) => {
   return `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${ddragonId}.png`;
 };
 
+const getTraitImage = (traitName) => {
+  const slug = traitName.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+  return `/traits/${slug}.png`;
+};
+
 export default function ResultsPage({ data, onReset }) {
   const [showAllTraits, setShowAllTraits] = useState(false);
   const [selectedChampion, setSelectedChampion] = useState('primary');
@@ -270,6 +275,12 @@ export default function ResultsPage({ data, onReset }) {
                 key={idx}
                 className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 space-y-4 group"
               >
+                <img
+                  src={getTraitImage(trait.name)}
+                  alt={trait.name}
+                  className="w-24 h-24 mx-auto rounded-full border-2 border-purple-500/40 shadow-lg object-cover"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
                 <div className="text-center">
                   <h4 className="text-xl font-bold text-purple-300">{trait.name}</h4>
                   <div className="mt-2 space-y-1">
