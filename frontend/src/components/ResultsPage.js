@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { Sparkles, Trophy, Target, Swords, Shield, RefreshCw, Lock, Unlock, Info } from 'lucide-react';
 
-// Riot Data Dragon CDN for champion images
 const DDRAGON_VERSION = '14.23.1';
+const DDRAGON_NAME_OVERRIDES = {
+  'LeBlanc': 'Leblanc',
+  'Mundo': 'DrMundo',
+  'Wukong': 'MonkeyKing',
+  'Nunu & Willump': 'Nunu',
+  'Renata Glasc': 'Renata',
+};
 const getChampionIcon = (championName) => {
-  // Handle champion names with special characters
-  const cleanName = championName.replace(/[^a-zA-Z]/g, '');
-  return `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${cleanName}.png`;
+  const ddragonId = DDRAGON_NAME_OVERRIDES[championName]
+    ?? championName.replace(/[^a-zA-Z]/g, '');
+  return `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${ddragonId}.png`;
 };
 
 export default function ResultsPage({ data, onReset }) {
