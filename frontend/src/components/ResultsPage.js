@@ -1,381 +1,732 @@
-import { useState } from 'react';
-import { Sparkles, Trophy, Target, Swords, Shield, RefreshCw, Lock, Unlock, Info } from 'lucide-react';
+import { useState, useMemo } from 'react';
 
 const DDRAGON_VERSION = '14.23.1';
 const DDRAGON_NAME_OVERRIDES = {
-  'LeBlanc': 'Leblanc',
-  'Mundo': 'DrMundo',
-  'Wukong': 'MonkeyKing',
+  LeBlanc: 'Leblanc',
+  Mundo: 'DrMundo',
+  Wukong: 'MonkeyKing',
   'Nunu & Willump': 'Nunu',
   'Renata Glasc': 'Renata',
 };
 const getChampionIcon = (championName) => {
-  const ddragonId = DDRAGON_NAME_OVERRIDES[championName]
-    ?? championName.replace(/[^a-zA-Z]/g, '');
+  const ddragonId = DDRAGON_NAME_OVERRIDES[championName] ?? championName.replace(/[^a-zA-Z]/g, '');
   return `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/champion/${ddragonId}.png`;
 };
-
 const getTraitImage = (traitName) => {
-  const slug = traitName.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+  const slug = traitName
+    .toLowerCase()
+    .replace(/[^a-z]+/g, '-')
+    .replace(/^-|-$/g, '');
   return `/traits/${slug}.png`;
 };
+const getTierClass = (score) => {
+  if (score >= 8) return 'tier-hi';
+  if (score >= 6) return 'tier-mid';
+  return 'tier-default';
+};
+const getTierLabel = (score) => {
+  if (score >= 8) return 'APEX';
+  if (score >= 6) return 'RESONANT';
+  return 'STEADY';
+};
+const romanize = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
 
-export default function ResultsPage({ data, onReset }) {
-  const [showAllTraits, setShowAllTraits] = useState(false);
-  const [selectedChampion, setSelectedChampion] = useState('primary');
+function SectionHead({ numeral, title }) {
+  return (
+    <div className="flex items-center gap-5" style={{ margin: '56px 0 24px' }}>
+      <h3
+        className="font-display uppercase text-ink m-0 flex items-baseline"
+        style={{ fontSize: 22, fontWeight: 500, letterSpacing: '0.2em' }}
+      >
+        <span
+          className="font-mono text-cyan"
+          style={{ fontSize: 14, marginRight: 14, letterSpacing: '0.1em' }}
+        >
+          ◆ {numeral}
+        </span>
+        {title}
+      </h3>
+      <div
+        className="flex-1"
+        style={{ height: 1, background: 'linear-gradient(90deg, #253655, transparent)' }}
+      />
+    </div>
+  );
+}
 
-  const topTraits = data.traits
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+function HexGlyph({ stroke = '#5ee0f0', variant = 0 }) {
+  // Variant 0: star + center
+  // Variant 1: X cross
+  // Variant 2: concentric circles
+  const paths = [
+    <g key={0}>
+      <path d="M20 10 L20 30 M12 20 L28 20" />
+      <circle cx="20" cy="20" r="3" fill={stroke} />
+    </g>,
+    <g key={1}>
+      <path d="M10 14 L30 26 M30 14 L10 26" />
+    </g>,
+    <g key={2}>
+      <circle cx="20" cy="20" r="7" />
+      <circle cx="20" cy="20" r="3" fill={stroke} />
+    </g>,
+  ];
+  return (
+    <svg viewBox="0 0 40 40" fill="none" stroke={stroke} strokeWidth="1.5">
+      <polygon points="20,4 36,12 36,28 20,36 4,28 4,12" />
+      {paths[variant % paths.length]}
+    </svg>
+  );
+}
 
-  const getScoreColor = (score) => {
-    if (score >= 8) return 'text-purple-300';
-    if (score >= 6) return 'text-blue-300';
-    if (score >= 4) return 'text-cyan-300';
-    return 'text-slate-300';
-  };
-
-  const getScoreGradient = (score) => {
-    if (score >= 8) return 'from-purple-500 to-pink-500';
-    if (score >= 6) return 'from-blue-500 to-purple-500';
-    if (score >= 4) return 'from-cyan-500 to-blue-500';
-    return 'from-slate-500 to-cyan-500';
-  };
-
-  const getResonanceColor = (strength) => {
-    if (strength >= 80) return 'text-purple-300';
-    if (strength >= 60) return 'text-pink-300';
-    if (strength >= 40) return 'text-blue-300';
-    return 'text-cyan-300';
-  };
-
-  const ChampionCard = ({ championData, isPrimary = false }) => (
-    <div className={`bg-gradient-to-br ${
-      isPrimary ? 'from-purple-900/50 to-blue-900/50 border-2 border-purple-500/50' : 'from-slate-800/50 to-slate-900/50 border border-purple-500/20'
-    } backdrop-blur-xl rounded-2xl p-6 shadow-xl transition-all hover:scale-[1.02]`}>
-      <div className="space-y-4">
-        {/* Rank Badge */}
-        {!isPrimary && (
-          <div className="text-center">
-            <span className="inline-block px-3 py-1 bg-purple-500/20 rounded-full text-purple-300 text-sm border border-purple-500/30">
-              #{championData.rank} Runner-Up
-            </span>
-          </div>
+function Slot({ filled, trait, glyphIndex = 0, stroke = '#5ee0f0', mini = false, title }) {
+  return (
+    <div
+      className={`slot ${filled ? 'filled' : 'empty'} ${mini ? 'slot-mini' : ''}`}
+      title={title}
+    >
+      <div className="glyph">
+        {filled ? (
+          trait ? (
+            <img
+              src={getTraitImage(trait.name)}
+              alt={trait.name}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                if (e.target.nextSibling) e.target.nextSibling.style.display = 'block';
+              }}
+            />
+          ) : (
+            <HexGlyph stroke={stroke} variant={glyphIndex} />
+          )
+        ) : (
+          <svg viewBox="0 0 40 40" fill="none" stroke="#5a6d8f" strokeWidth="1.2">
+            <rect x="14" y="18" width="12" height="10" rx="1" />
+            <path d="M17 18 V14 a3 3 0 0 1 6 0 V18" />
+          </svg>
         )}
+        {filled && trait && (
+          <HexGlyph stroke={stroke} variant={glyphIndex} />
+        )}
+      </div>
+    </div>
+  );
+}
 
-        {/* Champion Image */}
-        <div className="relative mx-auto w-32 h-32">
-          <img
-            src={getChampionIcon(championData.champion)}
-            alt={championData.champion}
-            className="w-full h-full rounded-full border-4 border-purple-500/50 shadow-lg"
-            onError={(e) => {
-              e.target.src = 'https://ddragon.leagueoflegends.com/cdn/14.23.1/img/profileicon/29.png';
-            }}
-          />
-          <div className="absolute -bottom-2 -right-2 bg-purple-600 rounded-full p-2 border-2 border-purple-400">
-            <Sparkles className="w-4 h-4 text-white" />
+function ChampPortrait({ name, large = false }) {
+  return (
+    <div className="champ-portrait">
+      <img
+        src={getChampionIcon(name)}
+        alt={name}
+        onError={(e) => {
+          e.target.src = 'https://ddragon.leagueoflegends.com/cdn/14.23.1/img/profileicon/29.png';
+        }}
+      />
+      {large && <div className="name-stripe">◆ BOUND SPIRIT ◆</div>}
+    </div>
+  );
+}
+
+function PrimaryPanel({ primary }) {
+  const resonance = Math.round(primary.resonance_strength);
+  const filled = primary.slots_filled || 0;
+  const strokeColors = ['#5ee0f0', '#d4b86a', '#8b7ff5'];
+  return (
+    <div className="primary-panel">
+      {/* Portrait side */}
+      <div className="champ-portrait-wrap">
+        <div className="rune-ring outer">
+          <svg viewBox="0 0 400 400">
+            <circle
+              cx="200" cy="200" r="195"
+              stroke="#d4b86a" strokeWidth="1" fill="none"
+              strokeDasharray="4 10" opacity="0.7"
+            />
+            <g fontFamily="Cinzel" fontSize="14" fill="#d4b86a" textAnchor="middle" opacity="0.8">
+              <text x="200" y="22">ᚦ</text>
+              <text x="378" y="207" transform="rotate(90 378 207)">ᚨ</text>
+              <text x="200" y="388" transform="rotate(180 200 388)">ᚱ</text>
+              <text x="22" y="207" transform="rotate(270 22 207)">ᛞ</text>
+            </g>
+          </svg>
+        </div>
+        <div className="rune-ring">
+          <svg viewBox="0 0 400 400">
+            <polygon
+              points="200,30 350,115 350,285 200,370 50,285 50,115"
+              stroke="#5ee0f0" strokeWidth="1" fill="none" opacity="0.8"
+            />
+          </svg>
+        </div>
+        <ChampPortrait name={primary.champion} large />
+      </div>
+
+      {/* Verdict side */}
+      <div className="flex flex-col justify-center relative" style={{ zIndex: 1 }}>
+        <div
+          className="font-mono uppercase text-gold"
+          style={{ fontSize: 11, letterSpacing: '0.3em', marginBottom: 12 }}
+        >
+          ◈ BOUND SPIRIT · RESONANCE {resonance}%
+        </div>
+        <h2
+          className="font-display uppercase m-0"
+          style={{
+            fontSize: 'clamp(36px, 5vw, 68px)',
+            fontWeight: 600,
+            lineHeight: 1,
+            letterSpacing: '0.02em',
+            color: '#fff',
+            textShadow: '0 0 40px rgba(94,224,240,0.3)',
+            marginBottom: 8,
+          }}
+        >
+          The {primary.champion}
+        </h2>
+        <div
+          className="font-display italic text-gold"
+          style={{ fontSize: 22, letterSpacing: '0.08em', marginBottom: 28 }}
+        >
+          of the Resonant Path
+        </div>
+
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            borderTop: '1px solid #1a2742',
+            borderBottom: '1px solid #1a2742',
+            padding: '20px 0',
+            marginBottom: 24,
+          }}
+        >
+          <div style={{ padding: '0 18px 0 0', borderRight: '1px solid #1a2742' }}>
+            <div
+              className="font-mono uppercase text-ink-ghost"
+              style={{ fontSize: 10, letterSpacing: '0.25em', marginBottom: 6 }}
+            >
+              Resonance
+            </div>
+            <div
+              className="font-display text-cyan"
+              style={{ fontSize: 32, fontWeight: 600, lineHeight: 1 }}
+            >
+              {resonance}
+              <span className="font-sans text-ink-dim" style={{ fontSize: 13, marginLeft: 4 }}>%</span>
+            </div>
+          </div>
+          <div style={{ padding: '0 18px', borderRight: '1px solid #1a2742' }}>
+            <div
+              className="font-mono uppercase text-ink-ghost"
+              style={{ fontSize: 10, letterSpacing: '0.25em', marginBottom: 6 }}
+            >
+              Trials Bound
+            </div>
+            <div
+              className="font-display text-cyan"
+              style={{ fontSize: 32, fontWeight: 600, lineHeight: 1 }}
+            >
+              {primary.games_played || 0}
+              <span className="font-sans text-ink-dim" style={{ fontSize: 13, marginLeft: 4 }}>/ 20</span>
+            </div>
+          </div>
+          <div style={{ padding: '0 0 0 18px' }}>
+            <div
+              className="font-mono uppercase text-ink-ghost"
+              style={{ fontSize: 10, letterSpacing: '0.25em', marginBottom: 6 }}
+            >
+              Harmonics
+            </div>
+            <div
+              className="font-display text-cyan"
+              style={{ fontSize: 32, fontWeight: 600, lineHeight: 1 }}
+            >
+              {filled}
+              <span className="font-sans text-ink-dim" style={{ fontSize: 13, marginLeft: 4 }}>/ 3</span>
+            </div>
           </div>
         </div>
 
-        {/* Champion Name */}
-        <h3 className={`text-center font-bold ${
-          isPrimary ? 'text-3xl bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent' : 'text-2xl text-purple-300'
-        }`}>
-          {championData.champion}
-        </h3>
-
-        {/* Resonance Stats */}
-        <div className="flex items-center justify-center space-x-4 text-sm">
-          <div className="text-center">
-            <p className="text-purple-300/70 text-xs">Resonance</p>
-            <p className={`text-2xl font-bold ${getResonanceColor(championData.resonance_strength)}`}>
-              {championData.resonance_strength.toFixed(0)}%
-            </p>
+        <div className="flex items-center gap-4 flex-wrap" style={{ marginTop: 8 }}>
+          <div
+            className="font-mono uppercase text-ink-ghost"
+            style={{ fontSize: 10, letterSpacing: '0.25em', width: 100 }}
+          >
+            HARMONIC SLOTS
           </div>
-          <div className="text-center">
-            <p className="text-purple-300/70 text-xs">Slots</p>
-            <p className="text-2xl font-bold text-purple-300">
-              {championData.slots_filled}/3
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-purple-300/70 text-xs">Games</p>
-            <p className="text-2xl font-bold text-blue-300">
-              {championData.games_played}
-            </p>
-          </div>
-        </div>
-        
-        {/* Play Rate */}
-        {championData.games_played > 0 && (
-          <div className="text-center">
-            <p className="text-sm text-purple-300">
-              <span className="text-blue-300 font-semibold">{championData.play_rate.toFixed(1)}%</span> of your games
-            </p>
-          </div>
-        )}
-
-        {/* Slot Visualization */}
-        <div className="space-y-2">
-          <p className="text-xs text-purple-300/70 text-center font-semibold">Trait Resonance Slots</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[0, 1, 2].map((slotIndex) => {
-              const trait = championData.trait_details[slotIndex];
-              const isFilled = slotIndex < championData.slots_filled;
-              
+          <div className="flex gap-3">
+            {[0, 1, 2].map((i) => {
+              const trait = primary.trait_details?.[i];
+              const isFilled = i < filled;
               return (
-                <div
-                  key={slotIndex}
-                  className={`group relative aspect-square rounded-lg border-2 ${
-                    isFilled
-                      ? 'bg-purple-500/20 border-purple-400/50'
-                      : 'bg-slate-800/50 border-slate-600/30'
-                  } flex items-center justify-center transition-all`}
-                  title={isFilled ? `${trait.name} (${trait.score}/10)` : 'Empty Slot'}
-                >
-                  {isFilled ? (
-                    <>
-                      <img
-                        src={getTraitImage(trait.name)}
-                        alt={trait.name}
-                        className="w-full h-full rounded-md object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'block';
-                        }}
-                      />
-                      <Unlock className="w-6 h-6 text-purple-300" style={{ display: 'none' }} />
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-48 p-2 bg-slate-900 border border-purple-500/30 rounded-lg text-xs text-purple-200">
-                        <p className="font-bold text-purple-300">{trait.name}</p>
-                        <p className="text-purple-400">Strength: {trait.score}/10</p>
-                        <p className="text-purple-300/70 italic mt-1">{trait.lore}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <Lock className="w-6 h-6 text-slate-500" />
-                  )}
-                </div>
+                <Slot
+                  key={i}
+                  filled={isFilled}
+                  trait={isFilled ? trait : null}
+                  glyphIndex={i}
+                  stroke={strokeColors[i]}
+                  title={isFilled && trait ? `${trait.name} (${trait.score}/10)` : 'Empty Slot'}
+                />
               );
             })}
           </div>
-          
-          {/* Matching Traits List */}
-          {championData.slots_filled > 0 && (
-            <div className="space-y-1 mt-3">
-              <p className="text-xs text-purple-300/70 font-semibold">Unlocked Traits:</p>
-              {championData.trait_details.map((trait, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs bg-purple-500/10 rounded px-2 py-1">
-                  <span className="text-purple-200">{trait.name}</span>
-                  <span className="text-purple-400 font-bold">{trait.score}/10</span>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Play Bonus */}
-          {championData.play_bonus !== 'None' && (
-            <div className="text-center mt-2">
-              <span className="inline-block px-3 py-1 bg-blue-500/20 rounded-full text-blue-300 text-xs border border-blue-500/30 font-semibold">
-                ⭐ {championData.play_bonus === 'Played' ? 'Champion Played' : `${championData.play_bonus} Play Rate`}
-              </span>
-            </div>
-          )}
-          
-          {/* No Games Played Note */}
-          {championData.games_played === 0 && (
-            <div className="text-center mt-2">
-              <span className="inline-block px-3 py-1 bg-slate-700/30 rounded-full text-purple-300/70 text-xs border border-slate-600/30">
-                💡 Playstyle Match
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
+}
 
+function RunnerUp({ champion, rank }) {
+  const resonance = Math.round(champion.resonance_strength);
+  const filled = champion.slots_filled || 0;
+  const strokes = ['#5ee0f0', '#d4b86a', '#8b7ff5'];
   return (
-    <div className="min-h-screen p-8 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div className="runnerup">
+      <div
+        className="font-mono uppercase text-gold absolute"
+        style={{ top: 16, right: 16, fontSize: 10, letterSpacing: '0.2em' }}
+      >
+        ◈ {romanize(rank + 1)} · {resonance}%
       </div>
-
-      {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center space-x-2">
-            <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
-            <h1 className="text-3xl font-bold text-purple-300">Runic Resonance Reading</h1>
-            <Sparkles className="w-6 h-6 text-blue-400 animate-pulse" />
-          </div>
-          <p className="text-lg text-purple-200">For Summoner: <span className="font-bold">{data.summoner_name}</span></p>
+      <ChampPortrait name={champion.champion} />
+      <div>
+        <h3
+          className="font-display uppercase m-0"
+          style={{ fontSize: 28, fontWeight: 600, letterSpacing: '0.04em', marginBottom: 4, color: '#cfe3ff' }}
+        >
+          {champion.champion}
+        </h3>
+        <div
+          className="font-display italic text-gold-dim"
+          style={{ fontSize: 14, marginBottom: 14 }}
+        >
+          of the Concordant Path
         </div>
-
-        {/* Primary Spirit Champion */}
-        <div>
-          <h2 className="text-2xl font-bold text-center text-purple-300 mb-4">
-            🌟 Your Spirit Champion
-          </h2>
-          <ChampionCard championData={data.spirit_champion.primary} isPrimary={true} />
+        <div className="flex flex-wrap gap-4 font-mono text-ink-dim" style={{ fontSize: 11 }}>
+          <span>RESONANCE <b className="text-cyan font-medium">{resonance}%</b></span>
+          <span>TRIALS <b className="text-cyan font-medium">{champion.games_played || 0}</b></span>
+          <span>PLAY RATE <b className="text-cyan font-medium">{(champion.play_rate || 0).toFixed(0)}%</b></span>
         </div>
-
-        {/* Runner-Up Champions */}
-        {data.spirit_champion.runner_ups.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-center text-purple-300">
-              🌠 Resonance Runner-Ups
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.spirit_champion.runner_ups.map((champion, idx) => (
-                <ChampionCard key={idx} championData={champion} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Narrative */}
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-purple-500/20">
-          <h3 className="text-2xl font-bold text-purple-300 mb-4 flex items-center space-x-2">
-            <Sparkles className="w-6 h-6" />
-            <span>The Runes Speak</span>
-          </h3>
-          <div className="prose prose-invert prose-purple max-w-none">
-            <p className="text-purple-100/90 leading-relaxed whitespace-pre-wrap">
-              {data.narrative}
-            </p>
-          </div>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 text-center">
-            <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{data.win_rate.toFixed(1)}%</p>
-            <p className="text-sm text-purple-300/70">Win Rate</p>
-          </div>
-          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 text-center">
-            <Target className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{data.kda.toFixed(2)}</p>
-            <p className="text-sm text-purple-300/70">KDA Ratio</p>
-          </div>
-          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 text-center">
-            <Swords className="w-8 h-8 text-red-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{data.games_analyzed}</p>
-            <p className="text-sm text-purple-300/70">Games Analyzed</p>
-          </div>
-          <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 text-center">
-            <Shield className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{data.summoner_level}</p>
-            <p className="text-sm text-purple-300/70">Summoner Level</p>
-          </div>
-        </div>
-
-        {/* Top 3 Traits */}
-        <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-purple-300 text-center">Your Dominant Traits</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {topTraits.map((trait, idx) => (
-              <div
-                key={idx}
-                className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20 space-y-4 group"
-              >
-                <img
-                  src={getTraitImage(trait.name)}
-                  alt={trait.name}
-                  className="w-24 h-24 mx-auto rounded-full border-2 border-purple-500/40 shadow-lg object-cover"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-                <div className="text-center">
-                  <h4 className="text-xl font-bold text-purple-300">{trait.name}</h4>
-                  <div className="mt-2 space-y-1">
-                    <p className={`text-4xl font-bold ${getScoreColor(trait.score)}`}>
-                      {trait.score}<span className="text-2xl text-purple-400/50">/10</span>
-                    </p>
-                    <p className="text-xs text-purple-300/50">Trait Strength</p>
-                  </div>
-                </div>
-                <div className="w-full bg-slate-700/50 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full bg-gradient-to-r ${getScoreGradient(trait.score)} transition-all`}
-                    style={{ width: `${(trait.score / 10) * 100}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-purple-200/80 text-center">{trait.description}</p>
-                <p className="text-xs text-purple-300/60 italic text-center">{trait.lore}</p>
-                
-                {/* Data Source Info */}
-                <div className="pt-2 border-t border-purple-500/20">
-                  <div className="flex items-start space-x-2">
-                    <Info className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-purple-300/70">{trait.data_source}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* All Traits (Toggle) */}
-        <div className="space-y-4">
-          <button
-            onClick={() => setShowAllTraits(!showAllTraits)}
-            className="w-full py-3 bg-slate-800/50 hover:bg-slate-800/70 rounded-xl border border-purple-500/20 text-purple-300 font-semibold transition-all"
-          >
-            {showAllTraits ? 'Hide' : 'Show'} All Traits
-          </button>
-
-          {showAllTraits && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.traits.map((trait, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-800/30 backdrop-blur-xl rounded-lg p-4 border border-purple-500/10 space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-purple-300">{trait.name}</h4>
-                    <span className={`text-lg font-bold ${getScoreColor(trait.score)}`}>
-                      {trait.score}<span className="text-sm text-purple-400/50">/10</span>
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-700/50 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full bg-gradient-to-r ${getScoreGradient(trait.score)}`}
-                      style={{ width: `${(trait.score / 10) * 100}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-purple-200/70">{trait.description}</p>
-                  <div className="flex items-start space-x-1 pt-1">
-                    <Info className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-purple-300/60">{trait.data_source}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-center space-x-4">
-          <button
-            onClick={onReset}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold rounded-lg shadow-lg transition-all transform hover:scale-105 flex items-center space-x-2"
-          >
-            <RefreshCw className="w-5 h-5" />
-            <span>Analyze Another Summoner</span>
-          </button>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-purple-300/50 space-y-1">
-          <p>Analysis ID: {data.analysis_id}</p>
-          <p>✨ May the Runes guide your path, Summoner ✨</p>
+        <div className="flex gap-1.5" style={{ marginTop: 14 }}>
+          {[0, 1, 2].map((i) => {
+            const trait = champion.trait_details?.[i];
+            const isFilled = i < filled;
+            return (
+              <Slot
+                key={i}
+                filled={isFilled}
+                trait={isFilled ? trait : null}
+                glyphIndex={i}
+                stroke={strokes[i]}
+                mini
+                title={isFilled && trait ? `${trait.name} (${trait.score}/10)` : 'Empty'}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
+  );
+}
+
+function LedgerIcon({ variant }) {
+  const common = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 };
+  if (variant === 'star')
+    return (
+      <svg {...common}>
+        <path d="M12 2 L14 8 L20 8 L15 12 L17 18 L12 14 L7 18 L9 12 L4 8 L10 8 Z" />
+      </svg>
+    );
+  if (variant === 'target')
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="5" />
+        <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+      </svg>
+    );
+  if (variant === 'grid')
+    return (
+      <svg {...common}>
+        <path d="M6 3 L6 21 M18 3 L18 21 M3 6 L21 6 M3 18 L21 18" />
+        <path d="M12 3 L12 21" />
+      </svg>
+    );
+  return (
+    <svg {...common}>
+      <path d="M12 2 L20 6 L20 13 Q20 18 12 22 Q4 18 4 13 L4 6 Z" />
+      <path d="M9 12 L11 14 L15 10" />
+    </svg>
+  );
+}
+
+function StatCell({ icon, value, unit, label, sub }) {
+  return (
+    <div
+      className="relative"
+      style={{
+        padding: '28px 24px',
+        borderRight: '1px solid #1a2742',
+        background: 'linear-gradient(180deg, rgba(14,22,41,0.4), rgba(9,14,28,0.6))',
+      }}
+    >
+      <div className="text-cyan" style={{ width: 28, height: 28, marginBottom: 18 }}>
+        <LedgerIcon variant={icon} />
+      </div>
+      <div
+        className="font-display"
+        style={{ fontSize: 40, fontWeight: 600, color: '#cfe3ff', lineHeight: 1, marginBottom: 8 }}
+      >
+        {value}
+        {unit && (
+          <span style={{ fontSize: 20, color: '#5a6d8f', marginLeft: 4 }}>{unit}</span>
+        )}
+      </div>
+      <div
+        className="font-mono uppercase text-ink-ghost"
+        style={{ fontSize: 10, letterSpacing: '0.25em' }}
+      >
+        {label}
+      </div>
+      {sub && (
+        <div className="font-sans text-cyan-deep" style={{ fontSize: 13, marginTop: 4 }}>
+          {sub}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TraitCard({ trait, index }) {
+  const tier = getTierClass(trait.score);
+  const tierLabel = getTierLabel(trait.score);
+  return (
+    <div className={`trait-card ${tier}`}>
+      <div className="flex items-center gap-4" style={{ marginBottom: 20 }}>
+        <div className="trait-glyph">
+          <img
+            src={getTraitImage(trait.name)}
+            alt={trait.name}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+        <div>
+          <div
+            className="font-display uppercase text-ink"
+            style={{ fontSize: 22, fontWeight: 600, letterSpacing: '0.06em', margin: '0 0 2px' }}
+          >
+            {trait.name}
+          </div>
+          <div
+            className="font-mono uppercase text-ink-ghost"
+            style={{ fontSize: 10, letterSpacing: '0.2em' }}
+          >
+            HARMONIC {romanize(index + 1)} · {tierLabel}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-baseline gap-2" style={{ marginBottom: 14 }}>
+        <span
+          className="font-display"
+          style={{
+            fontSize: 56,
+            fontWeight: 700,
+            lineHeight: 0.9,
+            color:
+              tier === 'tier-hi' ? '#d4b86a' : tier === 'tier-mid' ? '#8b7ff5' : '#5ee0f0',
+          }}
+        >
+          {trait.score}
+        </span>
+        <span className="font-display text-ink-ghost" style={{ fontSize: 20 }}>
+          / 10
+        </span>
+      </div>
+
+      <div className="trait-bar">
+        <div className="fill" style={{ width: `${trait.score * 10}%` }} />
+        <div className="tick" style={{ left: '25%' }} />
+        <div className="tick" style={{ left: '50%' }} />
+        <div className="tick" style={{ left: '75%' }} />
+      </div>
+
+      <div
+        className="font-sans text-ink-dim"
+        style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 14 }}
+      >
+        {trait.description}
+      </div>
+      {trait.lore && (
+        <div
+          className="font-display italic text-ink-ghost"
+          style={{
+            fontSize: 13,
+            lineHeight: 1.5,
+            paddingTop: 14,
+            borderTop: '1px solid #1a2742',
+          }}
+        >
+          "{trait.lore}"
+        </div>
+      )}
+      {trait.data_source && (
+        <div
+          className="font-mono text-ink-ghost flex gap-1.5"
+          style={{ fontSize: 10, letterSpacing: '0.05em', marginTop: 10 }}
+        >
+          <span className="text-cyan-deep">▸</span>
+          <span>{trait.data_source}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AllTraitsTable({ traits }) {
+  return (
+    <div className="all-traits-table">
+      {traits.map((t, i) => (
+        <div key={i} className="tt-row">
+          <div className="tt-g">
+            <svg viewBox="0 0 40 40" fill="none" stroke="#5ee0f0" strokeWidth="1.2">
+              <polygon points="20,4 36,12 36,28 20,36 4,28 4,12" />
+              <circle cx="20" cy="20" r="3" fill="#5ee0f0" />
+            </svg>
+          </div>
+          <div>
+            <div
+              className="font-display uppercase text-ink"
+              style={{ fontSize: 14, letterSpacing: '0.06em', marginBottom: 6 }}
+            >
+              {t.name}
+            </div>
+            <div className="tt-br">
+              <div className="f" style={{ width: `${t.score * 10}%` }} />
+            </div>
+          </div>
+          <div
+            className="font-display text-cyan"
+            style={{ fontSize: 20, fontWeight: 600 }}
+          >
+            {t.score}
+            <span className="text-ink-ghost" style={{ fontSize: 12, marginLeft: 2 }}>/10</span>
+          </div>
+          <div
+            className="font-mono text-ink-ghost"
+            style={{ fontSize: 10, letterSpacing: '0.05em' }}
+          >
+            {t.data_source || ''}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ResultsPage({ data, onReset }) {
+  const [showAllTraits, setShowAllTraits] = useState(false);
+
+  const topTraits = useMemo(
+    () => [...data.traits].sort((a, b) => b.score - a.score).slice(0, 3),
+    [data.traits]
+  );
+  const sortedTraits = useMemo(
+    () => [...data.traits].sort((a, b) => b.score - a.score),
+    [data.traits]
+  );
+
+  const summonerName = data.summoner_name || 'Summoner';
+  const regionLabel = (data.region || '').toUpperCase();
+  const timestamp = new Date().toUTCString().replace(/^.*?(\d{2}:\d{2}).*$/, '$1 UTC');
+  const shortId = (data.analysis_id || '').slice(0, 8).toUpperCase();
+
+  const kdaSub =
+    data.kills != null && data.deaths != null && data.assists != null
+      ? `K ${data.kills.toFixed(1)} · D ${data.deaths.toFixed(1)} · A ${data.assists.toFixed(1)}`
+      : null;
+
+  return (
+    <section
+      className="relative mx-auto"
+      style={{ padding: '40px 80px 80px', maxWidth: 1440 }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-end justify-between flex-wrap gap-10"
+        style={{ marginBottom: 56, paddingBottom: 28, borderBottom: '1px solid #1a2742' }}
+      >
+        <div>
+          <div
+            className="font-mono text-cyan flex items-center gap-2.5"
+            style={{ fontSize: 13, letterSpacing: '0.12em' }}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                width: 6, height: 6,
+                background: '#5ee0f0',
+                transform: 'rotate(45deg)',
+                boxShadow: '0 0 10px #5ee0f0',
+              }}
+            />
+            SUMMONER · {summonerName.toUpperCase()} · {regionLabel}
+          </div>
+          <h2
+            className="font-display uppercase text-ink"
+            style={{
+              fontSize: 'clamp(28px, 4vw, 40px)',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              margin: '8px 0 0',
+            }}
+          >
+            Your Resonance Reading
+          </h2>
+        </div>
+        <div
+          className="text-right font-mono text-ink-ghost"
+          style={{ fontSize: 11, letterSpacing: '0.1em', lineHeight: 1.8 }}
+        >
+          <div>ANALYSIS · #RR-{shortId}</div>
+          <div>LAST {data.games_analyzed || 20} RANKED TRIALS</div>
+          <div>CONSULTED {timestamp}</div>
+        </div>
+      </div>
+
+      {/* §I Spirit Binding */}
+      <SectionHead numeral="I" title="SPIRIT BINDING" />
+      <PrimaryPanel primary={data.spirit_champion.primary} />
+
+      {/* §II Concordant Spirits */}
+      {data.spirit_champion.runner_ups && data.spirit_champion.runner_ups.length > 0 && (
+        <>
+          <SectionHead numeral="II" title="CONCORDANT SPIRITS" />
+          <div
+            className="grid gap-6"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+              marginBottom: 56,
+            }}
+          >
+            {data.spirit_champion.runner_ups.map((c, i) => (
+              <RunnerUp key={i} champion={c} rank={i + 1} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Oracle narrative */}
+      <div className="oracle">
+        <div
+          className="font-mono uppercase text-gold flex items-center gap-2.5"
+          style={{ fontSize: 11, letterSpacing: '0.3em', marginBottom: 14, justifyContent: 'center' }}
+        >
+          <span style={{ flex: '0 0 24px', height: 1, background: '#8a7640' }} />
+          THE ORACLE SPEAKS
+          <span style={{ flex: '0 0 24px', height: 1, background: '#8a7640' }} />
+        </div>
+        <div className="oracle-text">
+          <p className="lead">{data.narrative}</p>
+        </div>
+      </div>
+
+      {/* §III Combat Ledger */}
+      <SectionHead numeral="III" title="COMBAT LEDGER" />
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          marginBottom: 56,
+          border: '1px solid #1a2742',
+        }}
+      >
+        <StatCell
+          icon="star"
+          value={data.win_rate?.toFixed(1)}
+          unit="%"
+          label="VICTORY RITE"
+          sub={data.wins != null ? `${data.wins}W · ${data.losses}L` : null}
+        />
+        <StatCell
+          icon="target"
+          value={data.kda?.toFixed(2)}
+          label="KDA HARMONIC"
+          sub={kdaSub}
+        />
+        <StatCell
+          icon="grid"
+          value={data.games_analyzed}
+          label="TRIALS READ"
+          sub="Solo/Duo · Ranked"
+        />
+        <StatCell
+          icon="shield"
+          value={`LVL ${data.summoner_level}`}
+          label="SUMMONER RANK"
+          sub={data.rank || null}
+        />
+      </div>
+
+      {/* §IV Dominant Harmonics */}
+      <SectionHead numeral="IV" title="DOMINANT HARMONICS" />
+      <div
+        className="grid gap-5"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          marginBottom: 40,
+        }}
+      >
+        {topTraits.map((t, i) => (
+          <TraitCard key={i} trait={t} index={i} />
+        ))}
+      </div>
+
+      {/* Unveil all */}
+      <button
+        className="toggle-all"
+        onClick={() => setShowAllTraits((v) => !v)}
+        style={{ marginBottom: 40 }}
+      >
+        {showAllTraits ? '▲ HIDE THE REMAINING HARMONICS' : '▼ UNVEIL ALL TEN HARMONICS'}
+      </button>
+      {showAllTraits && (
+        <div style={{ marginBottom: 40 }}>
+          <AllTraitsTable traits={sortedTraits} />
+        </div>
+      )}
+
+      {/* CTAs */}
+      <div className="flex justify-center gap-4 flex-wrap" style={{ margin: '48px 0 24px' }}>
+        <button className="btn-ghost" onClick={onReset}>
+          VIEW IN ARCHIVE
+        </button>
+        <button className="btn-primary" onClick={onReset}>
+          ◆ CONSULT ANOTHER SUMMONER
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div
+        className="text-center font-mono text-ink-ghost uppercase"
+        style={{ fontSize: 10, letterSpacing: '0.2em', lineHeight: 1.8 }}
+      >
+        <div className="text-gold-dim" style={{ letterSpacing: '0.3em' }}>◆ ◆ ◆</div>
+        <div>May the runes guide your path, summoner</div>
+        <div style={{ marginTop: 6, opacity: 0.5 }}>
+          ANALYSIS · #RR-{shortId}
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 1100px) {
+          section { padding: 20px !important; }
+        }
+        @media (max-width: 900px) {
+          section .grid[style*="repeat(4, 1fr)"] { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+    </section>
   );
 }

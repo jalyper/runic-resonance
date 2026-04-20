@@ -1,87 +1,132 @@
-import { Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const ANALYSIS_STEPS = [
-  'Connecting to the Rift...',
-  'Gathering match history from the archives...',
-  'Analyzing your combat patterns...',
-  'Calculating trait resonances...',
-  'Consulting the ancient Runes...',
-  'Channeling cosmic energies...',
-  'Revealing your spirit champion...'
+const RITUAL_STEPS = [
+  'Opening the gate to the Rift…',
+  'Gathering echoes from twenty trials…',
+  'Tracing the pattern of your blade…',
+  'Weighing the weight of your shields…',
+  'Consulting the Obelisks of Kaldera…',
+  'Drawing the alignment of the stars…',
+  'Binding the spirit to your name…',
 ];
+
+function RitualSigil() {
+  return (
+    <div
+      className="ritual-sigil relative mx-auto"
+      style={{ width: 340, height: 340, marginBottom: 48 }}
+    >
+      <div className="rune-ring r1">
+        <svg viewBox="0 0 400 400">
+          <circle cx="200" cy="200" r="190" stroke="#5ee0f0" strokeWidth="1" fill="none" strokeDasharray="3 8" />
+          <g fontFamily="Cinzel" fontSize="18" fill="#5ee0f0" textAnchor="middle">
+            <text x="200" y="30">ᚠ</text>
+            <text x="370" y="207" transform="rotate(90 370 207)">ᚨ</text>
+            <text x="200" y="385" transform="rotate(180 200 385)">ᚷ</text>
+            <text x="30" y="207" transform="rotate(270 30 207)">ᚾ</text>
+          </g>
+        </svg>
+      </div>
+      <div className="rune-ring r2">
+        <svg viewBox="0 0 400 400">
+          <polygon points="200,20 360,110 360,290 200,380 40,290 40,110" stroke="#8b7ff5" strokeWidth="1" fill="none" />
+          <circle cx="200" cy="20" r="4" fill="#8b7ff5" />
+          <circle cx="360" cy="110" r="4" fill="#8b7ff5" />
+          <circle cx="360" cy="290" r="4" fill="#8b7ff5" />
+          <circle cx="200" cy="380" r="4" fill="#8b7ff5" />
+          <circle cx="40" cy="290" r="4" fill="#8b7ff5" />
+          <circle cx="40" cy="110" r="4" fill="#8b7ff5" />
+        </svg>
+      </div>
+      <div className="rune-ring r3">
+        <svg viewBox="0 0 400 400">
+          <g stroke="#d4b86a" strokeWidth="0.8" fill="none">
+            <path
+              d="M200,40 L260,170 L390,180 L290,260 L330,390 L200,310 L70,390 L110,260 L10,180 L140,170 Z"
+              opacity="0.6"
+            />
+          </g>
+        </svg>
+      </div>
+      <div className="rune-ring r4">
+        <svg viewBox="0 0 400 400">
+          <circle cx="200" cy="200" r="80" stroke="#5ee0f0" strokeWidth="1.5" fill="none" />
+        </svg>
+      </div>
+      <div className="rune-core">
+        <svg viewBox="0 0 100 100" style={{ width: '85%', height: '85%' }}>
+          <g fill="none" stroke="#5ee0f0" strokeWidth="2" strokeLinecap="round">
+            <path d="M50 12 L50 88 M50 30 L32 48 M50 45 L68 63 M50 60 L32 78" />
+          </g>
+          <circle cx="50" cy="50" r="8" fill="#fff" />
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 export default function AnalysisPage() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
+    // Cycle through steps; loops back after the last so visuals keep moving
+    // until the API promise resolves and App.js swaps views.
     const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % ANALYSIS_STEPS.length);
-    }, 2000);
-
+      setCurrentStep((prev) => (prev + 1) % RITUAL_STEPS.length);
+    }, 1400);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.7s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.4s' }}></div>
-      </div>
+    <section
+      className="grid place-items-center"
+      style={{ minHeight: 'calc(100vh - 72px)', padding: 40 }}
+    >
+      <div className="text-center relative" style={{ maxWidth: 640 }}>
+        <RitualSigil />
 
-      {/* Content */}
-      <div className="relative z-10 text-center space-y-12 max-w-2xl">
-        {/* Spinning Runes */}
-        <div className="relative w-48 h-48 mx-auto">
-          <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full animate-spin" style={{ animationDuration: '3s' }}></div>
-          <div className="absolute inset-4 border-4 border-blue-500/30 rounded-full animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}></div>
-          <div className="absolute inset-8 border-4 border-pink-500/30 rounded-full animate-spin" style={{ animationDuration: '4s' }}></div>
-          
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Sparkles className="w-16 h-16 text-purple-400 animate-pulse" />
-          </div>
+        <h1
+          className="font-display text-ink uppercase"
+          style={{
+            fontSize: 32,
+            fontWeight: 500,
+            letterSpacing: '0.1em',
+            margin: '0 0 20px',
+          }}
+        >
+          The Runes Are <span className="text-cyan">Speaking</span>
+        </h1>
+
+        <div
+          className="font-sans italic text-ink-dim"
+          style={{
+            fontSize: 18,
+            letterSpacing: '0.1em',
+            margin: '0 0 32px',
+            minHeight: 28,
+          }}
+        >
+          "{RITUAL_STEPS[currentStep]}"
         </div>
 
-        {/* Title */}
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-            The Runes Are Speaking
-          </h1>
-          
-          <p className="text-xl text-purple-200 animate-pulse">
-            {ANALYSIS_STEPS[currentStep]}
-          </p>
-        </div>
-
-        {/* Loading indicator */}
-        <div className="flex items-center justify-center space-x-2">
-          <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-          <span className="text-purple-300 text-sm">This may take 15-30 seconds...</span>
-        </div>
-
-        {/* Progress dots */}
-        <div className="flex items-center justify-center space-x-2">
-          {ANALYSIS_STEPS.map((_, index) => (
+        <div className="flex justify-center gap-2.5" style={{ marginBottom: 24 }}>
+          {RITUAL_STEPS.map((_, i) => (
             <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentStep
-                  ? 'bg-purple-400 scale-150'
-                  : index < currentStep
-                  ? 'bg-purple-600'
-                  : 'bg-purple-900'
+              key={i}
+              className={`prune ${
+                i === currentStep ? 'active' : i < currentStep ? 'done' : ''
               }`}
             />
           ))}
         </div>
 
-        {/* Mystical text */}
-        <p className="text-sm text-purple-300/60 italic max-w-md mx-auto">
-          "The ancient magic of Runeterra flows through the Rift, revealing truths hidden in battle..."
-        </p>
+        <div
+          className="font-mono text-ink-ghost uppercase"
+          style={{ fontSize: 11, letterSpacing: '0.15em' }}
+        >
+          · CHANNEL STABLE · LATENCY 18–30s ·
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
